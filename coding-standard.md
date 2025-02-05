@@ -4,7 +4,7 @@ Follow a consistent and modular project structure. Example:
 
 ```javascript
 project-root/
-├── src/
+├── app/
 │   ├── controllers/       # Route handlers
 │   ├── models/            # Database models
 │   ├── routes/            # Route definitions
