@@ -87,8 +87,8 @@ And join the Nx community:
 
 ## Coding Standard
 
-Please see [CODING-STANDARD.md](./CODING-STANDARD.md) for our convention about writing code.
+Please see [coding-standard.md](./coding-standard.md) for our convention about writing code.
 
 ## Testing
 
-Please see [TESTING-PLAN.md](./TESTING-PLAN.md) for much in depth documentation on writing tests.
+Please see [testing-plan.md](./testing-plan.md) for much in depth documentation on writing tests.
