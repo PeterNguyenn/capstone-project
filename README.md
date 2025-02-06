@@ -8,14 +8,17 @@
 
 ## Documentation
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/expo?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-### Finish your CI setup
-
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/alt1oDVrYa)
+[Nx repo](https://nx.dev/getting-started/intro)
+[Expo](https://docs.expo.dev/)
+[Express](https://expressjs.com/)
 
 
 ### Run tasks
+
+To setup repo, use:
+```sh
+npm install
+```
 
 To run the dev server for your app, use:
 
