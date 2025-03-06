@@ -11,11 +11,7 @@ const app = express();
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 app.get('/api', (req, res) => {
-  res.send({ message: 'Welcome to my-express-api yolo!' });
-});
-
-app.get('/abc', (req, res) => {
-  res.send({ message: 'hello' });
+  res.send({ message: 'Welcome!' });
 });
 
 
