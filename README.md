@@ -20,10 +20,22 @@ To setup repo, use:
 npm install
 ```
 
+### Start Frontend App:
+
+For IOS simulator , use:
+Please have Xcode installed and install [expo orbit](https://expo.dev/orbit)
+
 To run the dev server for your app, use:
 
 ```sh
 npx nx serve megabyte-mentors
+```
+
+### Start Backend:
+Please install docker first and run this command
+
+```sh
+docker-compose up -d
 ```
 
 To create a production bundle:
