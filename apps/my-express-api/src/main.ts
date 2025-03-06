@@ -14,6 +14,11 @@ app.get('/api', (req, res) => {
   res.send({ message: 'Welcome!' });
 });
 
+app.get('/health', (req, res) => {
+  res.send({ message: 'OK!' });
+});
+
+
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
