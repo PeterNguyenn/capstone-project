@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   api:
-    container_name: nx-api
     build:
       context: .
       dockerfile: ./apps/my-express-api/Dockerfile
@@ -16,17 +15,14 @@ services:
     depends_on:
       - postgres
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5300/nx_dev
       - NODE_ENV=development
       - NX_DAEMON=true
     command: npx nx serve my-express-api --watch
 
   postgres:
-    container_name: nx-postgres
     image: postgres:14-alpine
-    restart: always
     ports:
-      - "5300:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
