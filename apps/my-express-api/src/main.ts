@@ -5,9 +5,34 @@
 
 import express from 'express';
 import * as path from 'path';
-import { pool } from './db';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose';
+import authRouter from './routers/authRouter';
+import postsRouter from './routers/postRouter';
+import applicationRouter from './routers/applicationRouter';
 
 const app = express();
+
+app.use(cors());
+app.use(helmet());
+app.use(cookieParser());
+app.use(express.json());          // For parsing application/json
+app.use(express.urlencoded({ extended: true }));
+
+mongoose.connect(process.env.MONGO_URI).then(() => {
+  console.log('Connected to MongoDB');
+}).catch((error) => {
+  console.error(error);
+});
+
+app.use('/api/auth', authRouter);
+
+app.use('/api/posts', postsRouter);
+
+app.use('/api/applications', applicationRouter);
+
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
@@ -16,46 +41,8 @@ app.get('/api', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.send({ message: 'OK!!!!!' });
+  res.send({ message: 'OK!!!!!!!2' });
 });
-
-app.get('/setup', async (req, res) => {
-  try {
-    await pool.query(
-      'CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL)'
-    );
-    res.send({ message: 'Setup complete' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Error setting up database' });
-  }
-});
-
-app.get('/users', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM users');
-    res.send(result.rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Error fetching users' });
-  }
-});
-
-app.post('/users', async (req, res) => {
-  const { name, email } = req.body;
-  try {
-    await pool.query('INSERT INTO users (name, email) VALUES ($1, $2)', [
-      name,
-      email,
-    ]);
-    res.send({ message: 'User created' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Error creating user' });
-  }
-});
-
-
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {

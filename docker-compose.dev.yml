@@ -1,0 +1,34 @@
+name: megabyte-dev
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: ./apps/my-express-api/Dockerfile
+    ports:
+      - '127.0.0.1:3000:3000' # Expose the backend on port 3333
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    # working_dir: /app
+    env_file: .env
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_HOST: postgres
+      RABBIT_HOST: rabbit
+    # command: npx nx serve my-express-api --watch
+
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=nx_dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

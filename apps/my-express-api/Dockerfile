@@ -1,46 +1,70 @@
 # Base development image
-FROM node:18-alpine AS base
-WORKDIR /app
+FROM node:20.5-alpine3.18 AS base
+
+RUN apk add --no-cache \
+  dumb-init=1.2.5-r2
+
+FROM base AS node-common
+
+WORKDIR /src
 # Install dependencies needed for development
-RUN apk add --no-cache python3 make g++ git
+RUN apk add --no-cache \
+  python3 \
+  make \
+  gcc \
+  g++
 
-# Development stage
-FROM base AS development
-# Install dependencies
-COPY package*.json ./
-RUN npm ci
-# Copy source code
-COPY . .
-# Expose API port
-EXPOSE 3000
+COPY package.json \
+  tsconfig* \
+  nx.json \
+  eslint.config* \
+  jest* \
+  package-lock.json \
+  ./
 
+RUN npm i
+
+FROM node-common AS server-build
+
+COPY apps/my-express-api ./apps/my-express-api/
+RUN npx nx run my-express-api:build:production
+
+FROM base AS server-prod
+LABEL description="The server side code for the Unteris website. It runs a NestJS server and connects to a redis and postgres database"
 USER node
-
-# Command to run in development
-CMD ["npx", "nx", "serve", "my-express-api", "--watch"]
-
-# Build stage
-FROM base AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npx nx build api --prod
-
-# Production stage
-FROM node:18-alpine AS production
-WORKDIR /app
-# Copy only necessary files from build stage
-COPY --from=build /app/dist/apps/my-express-api ./
-COPY --from=build /app/package.json ./
-# Install only production dependencies
-RUN npm ci --only=production
-# Set NODE_ENV
+WORKDIR /src
+COPY --from=server-build --chown=node:node /src/dist/apps/my-express-api ./
 ENV NODE_ENV=production
-# Expose API port
-EXPOSE 3000
-# Command to run in production
-CMD ["node", "main.js"]
+RUN npm i
+CMD ["dumb-init", "node", "main.js"]
+
+# USER node
+
+# # Command to run in development
+# CMD ["npx", "nx", "serve", "my-express-api", "--watch"]
+
+# # Build stage
+# FROM base AS build
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm ci
+# COPY . .
+# RUN npx nx build my-express-api --prod
+
+# # Production stage
+# FROM node:18-alpine AS production
+# WORKDIR /app
+# # Copy only necessary files from build stage
+# COPY --from=build /app/dist/apps/my-express-api ./
+# COPY --from=build /app/package.json ./
+# # Install only production dependencies
+# RUN npm ci --only=production
+# # Set NODE_ENV
+# ENV NODE_ENV=production
+# # Expose API port
+# EXPOSE 3000
+# # Command to run in production
+# CMD ["node", "main.js"]
 
 
 # FROM node:18 AS builder

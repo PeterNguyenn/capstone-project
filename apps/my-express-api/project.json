@@ -24,9 +24,11 @@
       }
     },
     "test": {
-      "options": {
-        "passWithNoTests": true
-      }
-    }
+		"executor": "@nx/jest:jest",
+		"outputPath": ["{workspaceRoot}/coverage/apps/server"],
+		"options": {
+			"jestConfig": "apps/my-express-api/jest.config.ts"
+		}
+	}
   }
 }

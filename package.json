@@ -8,6 +8,9 @@
     "@expo/metro-config": "~0.19.4",
     "@expo/metro-runtime": "~4.0.0",
     "axios": "^1.6.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "expo": "~52.0.11",
     "expo-constants": "~17.0.5",
     "expo-linking": "~7.0.5",
@@ -15,6 +18,11 @@
     "expo-splash-screen": "~0.29.13",
     "expo-status-bar": "~2.0.1",
     "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "nodemailer": "^6.10.0",
     "pg": "^8.13.3",
     "react": "~18.3.1",
     "react-dom": "~18.3.1",
@@ -23,7 +31,10 @@
     "react-native-screens": "~4.4.0",
     "react-native-svg": "~15.8.0",
     "react-native-svg-transformer": "~1.5.0",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "tslib": "^2.3.0",
+    "zod": "^3.24.2",
+    "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -72,7 +83,6 @@
     "tree-kill": "^1.2.2",
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",
-    "tslib": "^2.3.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.19.0",
     "webpack-cli": "^5.1.4"
