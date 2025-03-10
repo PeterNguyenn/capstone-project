@@ -20,7 +20,7 @@ const ReferenceSchema = z.object({
     campus: z.string().min(1, "Campus is required"),
     anticipatedGraduationDate: z.string().min(1, "Graduation date is required"),
     dietaryRestrictions: z.string().min(1, "Dietary restrictions information is required"),
-    shirtSize: z.enum(['XS', 'S', 'M', 'L', 'XL', 'XXL']),
+    shirtSize: z.string().min(1, "Dietary restrictions information is required"),
     accommodationsRequired: z.string().min(1, "Accommodations information is required"),
     references: z.array(ReferenceSchema).min(1, "At least one reference is required"),
     whyInterested: z.string().min(1, "Interest explanation is required"),

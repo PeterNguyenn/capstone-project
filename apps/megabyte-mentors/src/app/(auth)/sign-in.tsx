@@ -49,14 +49,14 @@ const SignIn = () => {
           <FormField
             title="Email"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e })}
+            handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles='mt-7'
             keyboardType='email-address'
           />
           <FormField
             title="Password"
             value={form.password}
-            onChange={(e) => setForm({ ...form, password: e })}
+            handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles='mt-7'
           />
 

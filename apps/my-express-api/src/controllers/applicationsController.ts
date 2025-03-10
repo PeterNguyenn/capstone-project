@@ -1,5 +1,4 @@
 import Application from "../models/applicationsModel";
-import Post from "../models/applicationsModel";
 
 export const getApplications = async (req, res) => {
 	const { page } = req.query;
@@ -50,7 +49,7 @@ export const singleApplication = async (req, res) => {
 export const createApplication = async (req, res) => {
 	const { userId } = req.user;
 	try {
-		const result = await Post.create({
+		const result = await Application.create({
 			...req.body,
 			userId,
 		});

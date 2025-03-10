@@ -92,6 +92,14 @@ export const signin = async (req: Request, res: Response) => {
 	}
 };
 
+export const logout = async (req: Request, res: Response) => {
+	res.clearCookie('Authorization');
+	res.status(200).json({
+		success: true,
+		message: 'Logged out successfully',
+	});
+};
+
 interface AuthRequest extends Request {
   user?: {
     userId: string;
