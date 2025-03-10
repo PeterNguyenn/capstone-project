@@ -34,7 +34,7 @@ const SignUp = () => {
         email: form.email,
         password: form.password,
       });
-      
+
       setIsLoggedIn(true);
       setUser(response.data.user);
 
@@ -61,20 +61,20 @@ const SignUp = () => {
           <FormField
             title="Username"
             value={form.username}
-            onChange={(e) => setForm({ ...form, username: e })}
+            handleChangeText={(e) => setForm({ ...form, username: e })}
             otherStyles='mt-10'
           />
           <FormField
             title="Email"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e })}
+            handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles='mt-7'
             keyboardType='email-address'
           />
           <FormField
             title="Password"
             value={form.password}
-            onChange={(e) => setForm({ ...form, password: e })}
+            handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles='mt-7'
           />
 

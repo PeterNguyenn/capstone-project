@@ -7,8 +7,8 @@ import { createApplication, getApplications, singleApplication } from '../contro
 
 const router = express.Router();
 
-router.get('/applications', identifier, getApplications);
+router.get('/', identifier, getApplications);
 router.get('/single-application', singleApplication);
-router.post('/applications', validate(ApplicationSchema), identifier, createApplication);
+router.post('/', validate(ApplicationSchema), identifier, createApplication);
 
 export default router;

@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../axios-config';
 import { ApiResponse } from '../types';
 
@@ -49,9 +50,9 @@ const authService = {
     const response = await apiClient.post<ApiResponse<null>>(
       '/api/auth/signout', 
     );
+    await AsyncStorage.removeItem('auth_token');
     return response.data;
   },
-
   
 
   getProfile: async (): Promise<ApiResponse<ProfileResponseData>> => {

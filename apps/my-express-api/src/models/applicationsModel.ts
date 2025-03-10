@@ -31,10 +31,10 @@ const applicationSchema = new mongoose.Schema(
     extraSkills: { type: String, required: true },
     additionalInfo: { type: String, required: true },
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-      }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    }
   },
   {
     timestamps: true,
