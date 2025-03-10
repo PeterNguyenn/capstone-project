@@ -22,9 +22,23 @@ export const signup = async (req: Request, res: Response) => {
         email: body.email,
         password: hashedPassword,
     });
+
+		const token = jwt.sign(
+			{
+				userId: user._id,
+				email: user.email,
+        role: user.role,
+			},
+			process.env.TOKEN_SECRET,
+			{
+				expiresIn: '8h',
+			}
+		);
+
     const result = await user.save();
     result.password = undefined;
-    res.status(201).send({ message: 'User created successfully', user: result });
+    res.status(201).send({ message: 'User created successfully', data:{
+			token, user: result }});
 
   } catch (error) {
     console.error(error);
@@ -51,7 +65,7 @@ export const signin = async (req: Request, res: Response) => {
 			{
 				userId: existingUser._id,
 				email: existingUser.email,
-                role: existingUser.role,
+        role: existingUser.role,
 			},
 			process.env.TOKEN_SECRET,
 			{
@@ -67,10 +81,45 @@ export const signin = async (req: Request, res: Response) => {
 			})
 			.json({
 				success: true,
-				token,
+				data: {
+					token
+				},
 				message: 'logged in successfully',
 			});
 	} catch (error) {
 		console.log(error);
+		res.status(500).send({ message: 'Internal server error' });
 	}
 };
+
+interface AuthRequest extends Request {
+  user?: {
+    userId: string;
+		email: string;
+		role: string;
+  };
+}
+
+export const profile = async (req: AuthRequest, res: Response) => {
+	const { userId } = req.user;
+
+	try {
+		const existingUser = await User.findById(userId).select('-password');
+		if (!existingUser) {
+			return res
+				.status(404)
+				.json({ message: 'User does not exists!' });
+		}
+
+		res.json({
+			success: true,
+			data: {
+				user: existingUser,
+			}
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).send({ message: 'Internal server error' });
+	}
+};
+
