@@ -2,6 +2,7 @@
   "expo": {
     "name": "MegabyteMentors",
     "slug": "megabyte-mentors",
+    "scheme": "megabyte-mentors",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -34,7 +35,9 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": [],
+    "plugins": [
+      "expo-router"
+    ],
     "extra": {
       "eas": {
         "projectId": "66727027-3a94-4329-bb13-d6f792746f29"

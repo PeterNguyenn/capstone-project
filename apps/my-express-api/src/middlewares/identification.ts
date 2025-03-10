@@ -1,15 +1,15 @@
 import jwt from 'jsonwebtoken';
 
 export const identifier = (req, res, next) => {
-	let token;
-	if (req.headers.client === 'not-browser') {
-		token = req.headers.authorization;
-	} else {
-		token = req.cookies['Authorization'];
-	}
+	const token = req.headers.authorization;
+	// if (req.headers.client === 'not-browser') {
+	// 	token = req.headers.authorization;
+	// } else {
+	// 	token = req.cookies['Authorization'];
+	// }
 
 	if (!token) {
-		return res.status(403).json({ success: false, message: 'Unauthorized' });
+		return res.status(401).json({ success: false, message: 'Unauthorized' });
 	}
 
 	try {
