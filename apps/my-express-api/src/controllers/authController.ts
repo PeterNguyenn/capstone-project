@@ -100,7 +100,7 @@ export const logout = async (req: Request, res: Response) => {
 	});
 };
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: {
     userId: string;
 		email: string;

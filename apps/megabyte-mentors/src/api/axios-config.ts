@@ -44,7 +44,7 @@ apiClient.interceptors.response.use(
       // if (refreshed) { retry original request }
       
       // Option 2: Log out user if token is invalid
-      // await AsyncStorage.removeItem('auth_token');
+      await AsyncStorage.removeItem('auth_token');
       // Notify auth context/store to update state
       // authStore.signOut();
     }

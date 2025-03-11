@@ -48,7 +48,7 @@ const authService = {
 
   signOut: async (): Promise<ApiResponse<null>> => {
     const response = await apiClient.post<ApiResponse<null>>(
-      '/api/auth/signout', 
+      '/api/auth/logout', 
     );
     await AsyncStorage.removeItem('auth_token');
     return response.data;

@@ -3,15 +3,30 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import EmptyState from '../../components/EmptyState';
 import { icons } from '../../constants';
+import { useApiMutation } from '../../api/hooks';
+import authService from '../../api/services/auth.service';
+import { useGlobalContext } from '../../context/GlobalProvider';
+import { router } from 'expo-router';
 interface Item {
   id: number;
   name?: string;
 }
 
 const Profile = () => {
+  const { setUser, setIsLoggedIn } = useGlobalContext();
+
+  const { mutate: signOut } = useApiMutation(
+    authService.signOut
+  );
   const data: Item[] = [];
-  const logout = () => {
-    // Handle logout logic here
+
+
+  const logout = async () => {
+    await signOut(null);
+    setUser(null);
+    setIsLoggedIn(false);
+
+    router.replace("/sign-in");
   };
   return (
     <SafeAreaView className="bg-primary h-full">
