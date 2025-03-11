@@ -32,10 +32,10 @@ npx nx serve megabyte-mentors
 ```
 
 ### Start Backend:
-Please install docker first and run this command
+Just need to run the following command:
 
 ```sh
-docker-compose up -d
+npx nx serve my-express-api
 ```
 
 To create a production bundle:
