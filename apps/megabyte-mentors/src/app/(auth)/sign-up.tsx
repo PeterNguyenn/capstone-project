@@ -54,15 +54,16 @@ const SignUp = () => {
     <SafeAreaView className='bg-primary h-full'>
       <ScrollView>
         <View className='w-full h-full justify-center px-4 my-6 min-h-[70vh]'>
-          <Image source={images.logo} className='w-[115px] h-[35px]' resizeMode='contain' />
+          <Image source={images.logo} className='w-[200px] h-[35px]' resizeMode='contain' />
           <Text className='text-white text-2xl font-psemibold text-semibold mt-10'>
-            Sign Up Megabyte Mentors
+            Sign Up
             </Text>
           <FormField
             title="Username"
             value={form.username}
             handleChangeText={(e) => setForm({ ...form, username: e })}
             otherStyles='mt-10'
+            testID='username-field'
           />
           <FormField
             title="Email"
@@ -70,15 +71,17 @@ const SignUp = () => {
             handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles='mt-7'
             keyboardType='email-address'
+            testID='email-field'
           />
           <FormField
             title="Password"
             value={form.password}
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles='mt-7'
+            testID='password-field'
           />
 
-          <CustomButton title='Sign Up' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} />
+          <CustomButton title='Sign Up' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} testID='signup-button' />
           <View className='justify-center pt-5 flex-row gap-2'>
             <Text className='text-lg text-gray-100 font-pregular'>Have an account already?</Text>
             <Link href='/sign-in' className='text-secondary font-psemibold text-lg'>Sign In</Link>

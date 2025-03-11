@@ -42,9 +42,9 @@ const SignIn = () => {
     <SafeAreaView className='bg-primary h-full'>
       <ScrollView>
         <View className='w-full h-full justify-center px-4 my-6 min-h-[70vh]'>
-          <Image source={images.logo} className='w-[115px] h-[35px]' resizeMode='contain' />
+          <Image source={images.logo} className='w-[200px] h-[35px]' resizeMode='contain' />
           <Text className='text-white text-2xl font-psemibold text-semibold mt-10'>
-            Login To Megabyte Mentors
+            Login
             </Text>
           <FormField
             title="Email"
@@ -63,7 +63,7 @@ const SignIn = () => {
           <CustomButton title='Sign In' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} />
           <View className='justify-center pt-5 flex-row gap-2'>
             <Text className='text-lg text-gray-100 font-pregular'>Don't have an account?</Text>
-            <Link href='/sign-up' className='text-secondary font-psemibold text-lg'>Sign Up</Link>
+            <Link href='/sign-up' className='text-secondary font-psemibold text-lg' testID='signup-link'>Sign Up</Link>
           </View>
         </View>
       </ScrollView>

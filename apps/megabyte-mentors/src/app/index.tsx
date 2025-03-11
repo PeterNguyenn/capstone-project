@@ -14,18 +14,21 @@ const App = () => {
     <SafeAreaView className="bg-primary h-full">
       <ScrollView contentContainerStyle={{ height: '100%' }}>
         <View className="w-full items-center justify-center min-h-[85vh] px-4">
-          <Image source={images.logo} className='w-[130px] h-[84px]' resizeMode='contain' />
+          <Image source={images.logo} className='w-[230px] h-[84px]' resizeMode='contain' testID="home-logo" />
           <Image source={images.cards} className='max-w-[380px] w-full h-[300px]' resizeMode='contain' />
 
           <View className='relative mt-5'>
-            <Text className='text-white text-3xl font-bold text-center'>
-              Discover Endless Possibilities with {" "} <Text className='text-secondary' testID="heading">Megabyte Mentors</Text>
+            <Text className='text-white text-3xl font-bold text-center' data-testid="welcome-text">
+              Become a Mentors Today with {" "} <Text className='text-secondary' testID="heading">Sheridan</Text>
             </Text>
           </View>
+          <Text className="text-sm font-pregular text-gray-100 mt-7 text-center">
+            Where You Can Help and Support Other Students Struggle with Difficulty
+          </Text>
 
           <CustomButton title="Continue with Email" handlePress={() => {
             router.push('sign-in')
-          }} containerStyle='w-full mt-7' />
+          }} containerStyle='w-full mt-7' testID="continue-email" />
         </View>
       </ScrollView>
       <StatusBar style="light" backgroundColor={'#161622'} />

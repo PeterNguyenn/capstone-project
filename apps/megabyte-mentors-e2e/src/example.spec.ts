@@ -1,8 +1,37 @@
 import { test, expect } from '@playwright/test';
 
-test('has title', async ({ page }) => {
-  await page.goto('/');
-
+test('sign up flow', async ({ page }) => {
+  await page.goto('http://localhost:8081');
+  const homeLogo = await page.getByTestId('home-logo');
+  await expect(homeLogo).toBeVisible();
   // Expect h1 to contain a substring.
-  expect(await page.locator('h1').innerText()).toContain('Welcome');
+  const continueEmail = await page.getByTestId('continue-email');
+  // expect(continueEmail.innerText()).toContain('Continue with Email');
+
+  await continueEmail.click();
+
+  await page.waitForURL('**/sign-in');
+  expect(page.url()).toBe('http://localhost:8081/sign-in');
+
+  const signupLink = await page.getByTestId('signup-link');
+
+  await expect(signupLink).toBeVisible();
+
+  await signupLink.click();
+
+  await page.waitForURL('**/sign-up');
+  expect(page.url()).toBe('http://localhost:8081/sign-up');
+
+  await page.getByTestId('username-field').fill('testPlaywright');
+  await page.getByTestId('email-field').fill('test'+ Math.random() + '@test.com');
+  await page.getByTestId('password-field').fill('Test21212');
+
+  const signupButton = await page.getByTestId('signup-button');
+  await signupButton.click();
+
+  await page.waitForURL('**/home');
+  expect(page.url()).toBe('http://localhost:8081/home');
+
+  await expect(await page.getByTestId('welcome')).toBeVisible();
+
 });

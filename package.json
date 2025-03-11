@@ -7,6 +7,7 @@
   "dependencies": {
     "@expo/metro-config": "~0.19.4",
     "@expo/metro-runtime": "~4.0.0",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "axios": "^1.8.2",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
@@ -21,6 +22,7 @@
     "helmet": "^8.0.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "mongodb-memory-server": "^10.1.4",
     "mongoose": "^8.12.1",
     "nativewind": "^4.1.23",
     "nodemailer": "^6.10.0",
@@ -33,10 +35,10 @@
     "react-native-svg": "~15.8.0",
     "react-native-svg-transformer": "~1.5.0",
     "react-native-web": "~0.19.13",
+    "supertest": "^7.0.0",
     "tslib": "^2.3.0",
     "zod": "^3.24.2",
-    "zod-validation-error": "^3.4.0",
-    "@react-native-async-storage/async-storage": "1.23.1"
+    "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",

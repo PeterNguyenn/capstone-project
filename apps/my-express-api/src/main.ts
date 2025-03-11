@@ -40,8 +40,17 @@ app.get('/api', (req, res) => {
   res.send({ message: 'Welcome!' });
 });
 
-app.get('/health', (req, res) => {
-  res.send({ message: 'OK!!!!!!!2' });
+app.get('/health', async (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1;
+  const isHealthy = dbStatus;
+  
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'healthy' : 'unhealthy',
+    details: {
+      database: dbStatus ? 'connected' : 'disconnected',
+      // uptime: process.uptime()
+    }
+  });
 });
 
 const port = process.env.PORT || 3000;

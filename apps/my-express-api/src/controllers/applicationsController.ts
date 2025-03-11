@@ -1,15 +1,20 @@
 import Application from "../models/applicationsModel";
+import { Request, Response } from "express";
+import { AuthRequest } from "./authController";
 
-export const getApplications = async (req, res) => {
+export const getApplications = async (req: Request, res: Response) => {
 	const { page } = req.query;
 	const itemsPerPage = 10;
 
 	try {
 		let pageNum = 0;
-		if (page <= 1) {
-			pageNum = 0;
-		} else {
-			pageNum = page - 1;
+		if (typeof page === 'string') {
+			const parsedPage = parseInt(page, 10);
+			if (parsedPage <= 1) {
+				pageNum = 0;
+			} else {
+				pageNum = parsedPage - 1;
+			}
 		}
 		const result = await Application.find()
 			.sort({ createdAt: -1 })
@@ -25,7 +30,7 @@ export const getApplications = async (req, res) => {
 	}
 };
 
-export const singleApplication = async (req, res) => {
+export const singleApplication = async (req: Request, res: Response) => {
 	const { _id } = req.query;
 
 	try {
@@ -46,7 +51,7 @@ export const singleApplication = async (req, res) => {
 	}
 };
 
-export const createApplication = async (req, res) => {
+export const createApplication = async (req: AuthRequest, res: Response) => {
 	const { userId } = req.user;
 	try {
 		const result = await Application.create({
