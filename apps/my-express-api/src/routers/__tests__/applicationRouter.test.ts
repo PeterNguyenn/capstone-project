@@ -167,4 +167,106 @@ describe('Application Routes Integration Tests', () => {
       expect(response.body).toHaveProperty('errors');
     });
   });
+
+  describe('PUT /applications/:_id/review', () => {
+    const mockAdminUser = {
+      _id: new mongoose.Types.ObjectId(),
+      name: 'Admin User',
+      email: 'admin@example.com',
+      password: 'Password123!',
+      role: 'admin'
+    };
+  
+    const mockAdminToken = jwt.sign(
+      { userId: mockAdminUser._id, email: mockAdminUser.email, role: 'admin' },
+      process.env.TOKEN_SECRET || 'test-secret'
+    );
+  
+    beforeEach(async () => {
+      await User.create(mockAdminUser);
+    });
+  
+    it('should update application status when authenticated as admin', async () => {
+      const testApp = await Application.create({
+        userId: mockUser._id,
+        ...mockApplication,
+        status: 'pending'
+      });
+  
+      const response = await request(app)
+        .put(`/applications/${testApp._id}/review`)
+        .set('Authorization', `Bearer ${mockAdminToken}`)
+        .send({ status: 'accepted' })
+        .expect(200);
+  
+      expect(response.body).toHaveProperty('success', true);
+      expect(response.body).toHaveProperty('message', 'Application updated successfully');
+      expect(response.body.data).toHaveProperty('status', 'accepted');
+    });
+  
+    it('should reject non-admin users', async () => {
+      const testApp = await Application.create({
+        userId: mockUser._id,
+        ...mockApplication,
+        status: 'pending'
+      });
+  
+      const response = await request(app)
+        .put(`/applications/${testApp._id}/review`)
+        .set('Authorization', `Bearer ${mockToken}`) // Regular user token
+        .send({ status: 'accepted' })
+        .expect(403);
+  
+      expect(response.body).toHaveProperty('success', false);
+      expect(response.body).toHaveProperty('message', 'Forbidden: Admin access required');
+    });
+  
+    it('should validate status enum values', async () => {
+      const testApp = await Application.create({
+        userId: mockUser._id,
+        ...mockApplication,
+        status: 'pending'
+      });
+    
+      const response = await request(app)
+        .put(`/applications/${testApp._id}/review`)
+        .set('Authorization', `Bearer ${mockAdminToken}`)
+        .send({ status: 'invalid-status' })
+        .expect(400);
+    
+      // Check for the actual error structure
+      expect(response.body).toEqual({
+        status: 'error',  // Changed from checking 'success: false'
+        message: 'Validation failed',
+        errors: expect.arrayContaining([
+          expect.objectContaining({
+            code: 'invalid_enum_value',
+            path: ['status']
+          })
+        ])
+      });
+    });
+  
+    it('should return 404 for non-existent application', async () => {
+      const nonExistentId = new mongoose.Types.ObjectId();
+      
+      const response = await request(app)
+        .put(`/applications/${nonExistentId}/review`)
+        .set('Authorization', `Bearer ${mockAdminToken}`)
+        .send({ status: 'accepted' })
+        .expect(404);
+  
+      expect(response.body).toHaveProperty('success', false);
+      expect(response.body).toHaveProperty('message', 'Application not found');
+    });
+  
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .put('/applications/some-id/review')
+        .send({ status: 'accepted' })
+        .expect(401);
+  
+      expect(response.body).toHaveProperty('message', 'Unauthorized');
+    });
+  });
 });
