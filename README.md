@@ -38,6 +38,12 @@ Just need to run the following command:
 npx nx serve my-express-api
 ```
 
+### Run test Backend:
+
+```sh
+npx nx run my-express-api:test
+```
+
 To create a production bundle:
 
 ```sh
