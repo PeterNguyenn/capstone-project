@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
-
+ 
 const referenceSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    relationship: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    emailAddress: { type: String, required: true },
-  });
-
+  name: { type: String, required: true },
+  relationship: { type: String, required: true },
+  phoneNumber: { type: String, required: true },
+  emailAddress: { type: String, required: true },
+});
+ 
 const applicationSchema = new mongoose.Schema(
   {
     studentName: { type: String, required: true },
@@ -17,7 +17,8 @@ const applicationSchema = new mongoose.Schema(
     emailAddress: { type: String, required: true },
     programOfStudy: { type: String, required: true },
     currentTerm: { type: String, required: true },
-    numberOfTermsInProgram: { type: String, required: true },
+    // Updated to Number:
+    numberOfTermsInProgram: { type: Number, required: true },
     campus: { type: String, required: true },
     anticipatedGraduationDate: { type: String, required: true },
     dietaryRestrictions: { type: String, required: true },
@@ -33,14 +34,14 @@ const applicationSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true
-    }
+      required: true,
+    },
   },
   {
     timestamps: true,
   }
 );
-
+ 
 const Application = mongoose.model('Application', applicationSchema);
-
+ 
 export default Application;
