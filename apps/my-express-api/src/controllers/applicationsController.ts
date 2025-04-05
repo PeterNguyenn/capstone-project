@@ -63,3 +63,30 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
 		console.log(error);
 	}
 };
+
+export const updateApplication = async (req: Request, res: Response) => {
+    const { _id } = req.params; // Assuming the application ID is passed as a URL parameter
+    const { status} = req.body; // status can be 'accepted' or 'rejected'
+
+    try {
+        // Find the application by ID
+        const existingApplication = await Application.findOne({ _id });
+
+        if (!existingApplication) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        // Update the application status and admin comments
+        existingApplication.status = status;
+        //existingApplication.adminComments = adminComments;
+        //existingApplication.reviewedAt = new Date();
+
+        // Save the updated application
+        await existingApplication.save();
+
+        res.status(200).json({ success: true, message: 'Application updated successfully', data: existingApplication });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: 'Error updating application', error: error.message });
+    }
+};
