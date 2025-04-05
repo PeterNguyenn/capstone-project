@@ -12,6 +12,8 @@ module.exports = {
                 100: "#00B1CD",
                 200: "#75BEEB",
               },
+              card: "#4E4E6170",
+              border: "#CFCFFC40",
               black: {
                 DEFAULT: "#000",
                 100: "#1E1E2D",
@@ -20,6 +22,11 @@ module.exports = {
               gray: {
                 100: "#CDCDE0",
               },
+              status: {
+                pending: "#FF7966",
+                approved: "#48D065",
+                rejected: "#D14249",
+              }
             },
             fontFamily: {
               pthin: ["Poppins-Thin", "sans-serif"],
@@ -34,5 +41,5 @@ module.exports = {
             },
         },
     },
-    plugins: []
+    plugins: [],
 };
