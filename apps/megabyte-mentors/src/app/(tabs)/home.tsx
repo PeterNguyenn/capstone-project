@@ -3,21 +3,23 @@ import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { images } from '../../constants'
 import EmptyState from '../../components/EmptyState'
-
-interface Item {
-  id: number;
-  name?: string;
-}
+import ApplicationItem from '../../components/ApplicationItem'
+import { ApplicationRo } from '../../api/services/application.service'
 
 const Home = () => {
-  const data: Item[] = [];
+  const data: any[] = [{_id: "1", studentName: 'Peter Nguyen', studentNumber: '2121212', campus: "HMC"}, {_id: "2", studentName: 'Peter Nguyen', studentNumber: '2121212', campus: "HMC"}];
   return (
     <SafeAreaView className='bg-primary h-full'>
       <FlatList
         data={data}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item._id.toString()}
         renderItem={({item}) => (
-          <Text className='text-3xl text-white'>{item?.id ? item.name || `Item ${item.id}` : null}</Text>
+          <ApplicationItem
+            _id={item._id}
+            studentName={item.studentName}
+            studentNumber={item.studentNumber}
+            campus={item.campus}
+          />
         )}
         ListHeaderComponent={() => (
           <View className='my-6 px-4 space-y-6'>
@@ -31,7 +33,7 @@ const Home = () => {
               </View>
             </View>
 
-            <View className='w-full flex-1 pt-5 pb-8'>
+            <View className='w-full flex-1 pt-5'>
               <Text className='text-gray-100 text-lg font-pregular mb-3'>Applications</Text>
             </View>
           </View>
