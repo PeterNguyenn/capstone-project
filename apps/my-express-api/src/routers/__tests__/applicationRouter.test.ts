@@ -105,7 +105,7 @@ describe('Application Routes Integration Tests', () => {
     });
   });
 
-  describe('GET /applications/single-application', () => {
+  describe('GET /applications/:_id', () => {
     it('should return a single application', async () => {
       const testApp = await Application.create({
         userId: mockUser._id,
@@ -113,9 +113,8 @@ describe('Application Routes Integration Tests', () => {
       });
 
       const response = await request(app)
-        .get('/applications/single-application')
+        .get(`/applications/${testApp._id.toString()}`)
         .set('Authorization', `Bearer ${mockToken}`)
-        .query({ _id: testApp._id.toString() })
         .expect(200);
 
       expect(response.body).toHaveProperty('success', true);
@@ -125,7 +124,7 @@ describe('Application Routes Integration Tests', () => {
 
     it('should return 404 for non-existent application', async () => {
       const response = await request(app)
-        .get('/applications/single-application')
+        .get(`/applications/${new mongoose.Types.ObjectId().toString()}`)
         .set('Authorization', `Bearer ${mockToken}`)
         .query({ _id: new mongoose.Types.ObjectId().toString() })
         .expect(404);
