@@ -37,8 +37,6 @@ const SignUp = () => {
 
       setIsLoggedIn(true);
       setUser(response.data.user);
-
-      console.log(response);
       // Store token
       await AsyncStorage.setItem('auth_token', response.data.token);
       // Navigate to home screen

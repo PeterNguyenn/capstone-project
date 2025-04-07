@@ -4,8 +4,16 @@ import React from 'react'
 const StatusChip = (props: { status: string }) => {
   const { status } = props;
 
+  const getStatusColor = () => {
+    switch(status) {
+      case 'accepted': return 'bg-status-accepted';
+      case 'pending': return 'bg-status-pending';
+      case 'rejected': return 'bg-status-rejected';
+      default: return 'bg-status-pending';
+    }
+  };
   return (
-    <View className={`bg-status-${status} rounded-3xl shadow-md`}>
+    <View className={`rounded-3xl shadow-md ${getStatusColor()}`}>
       <Text className='text-clip font-psemibold text-primary px-3 py-1.5'>{status}</Text>
     </View>
   )

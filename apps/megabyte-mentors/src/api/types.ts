@@ -6,10 +6,10 @@ export interface ApiResponse<T> {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  total: number;
-  page: number;
   limit: number;
-  totalPages: number;
+  page?: number;
+  message?: string;
+  success: boolean;
 }
 
 export interface ErrorResponse {

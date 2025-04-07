@@ -56,6 +56,8 @@ describe('Applications Controller', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         success: true,
         message: 'applications',
+        page: '2',
+        limit: 10,
         data: [mockApplication]
       });
     });

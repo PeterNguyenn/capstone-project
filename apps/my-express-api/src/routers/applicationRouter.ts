@@ -10,7 +10,7 @@ import { createApplication, getApplications, singleApplication, updateApplicatio
 const router = express.Router();
 
 router.get('/', identifier, getApplications);
-router.get('/single-application', identifier, singleApplication);
+router.get('/:_id', identifier, singleApplication);
 router.post('/', validate(ApplicationSchema), identifier, createApplication);
 router.put('/:_id/review', validate(UpdateApplicationStatusSchema), adminGuard, updateApplication);
 

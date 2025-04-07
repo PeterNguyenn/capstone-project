@@ -5,6 +5,7 @@ import "../../global.css";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import GlobalProvider from "../context/GlobalProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,6 +22,7 @@ const RootLayout = () => {
     "Poppins-SemiBold": require("../../assets/fonts/Poppins-SemiBold.ttf"),
     "Poppins-Thin": require("../../assets/fonts/Poppins-Thin.ttf"),
   });
+  const queryClient = new QueryClient();
 
   useEffect(() => {
     if (error) throw error;
@@ -35,16 +37,18 @@ const RootLayout = () => {
   }
 
   return (
-    <GlobalProvider>
-      <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(application)" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
-          {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
-      </Stack>
-    </GlobalProvider>
+    <QueryClientProvider client={queryClient}>
+      <GlobalProvider>
+        <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(application)" options={{ headerShown: false }} />
+            {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
+            {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
+        </Stack>
+      </GlobalProvider>
+    </QueryClientProvider>
   );
 }
 export default RootLayout;

@@ -14,9 +14,10 @@ export interface SignUpData {
 }
 
 export interface AuthUser {
-  id: string;
+  _id: string;
   email: string;
   name?: string;
+  role: string;
 }
 
 export interface AuthResponseData {

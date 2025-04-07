@@ -1,122 +1,61 @@
-import { Text, ScrollView, Alert, View, TouchableOpacity, Image } from 'react-native';
-import React, { useState } from 'react';
+import {
+  Text,
+  ScrollView,
+  Alert,
+  View,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import FormField from '../../components/FormField';
-import CustomButton from '../../components/CustomButton';
-import { isObjectFilledOut } from '../../utils/check-empty-object';
-import { useApiMutation } from '../../api/hooks';
-import applicationService from '../../api/services/application.service';
+import CustomButton from '../../../components/CustomButton';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ApiError } from '../../api/utils';
-import { icons } from '../../constants';
-
-const initialState = {
-  studentName: '',
-  studentNumber: '',
-  address: '',
-  phoneNumber: '',
-  alternateNumber: '',
-  emailAddress: '',
-  programOfStudy: '',
-  currentTerm: '',
-  numberOfTermsInProgram: '',
-  campus: '',
-  anticipatedGraduationDate: '',
-  dietaryRestrictions: '',
-  shirtSize: '',
-  accommodationsRequired: '',
-  firstReferenceName: '',
-  firstReferenceRelationship: '',
-  firstReferencePhoneNumber: '',
-  firstReferenceEmailAddress: '',
-  secondReferenceName: '',
-  secondReferenceRelationship: '',
-  secondReferencePhoneNumber: '',
-  secondReferenceEmailAddress: '',
-  whyInterested: '',
-  makingDifference: '',
-  strengths: '',
-  areasOfGrowth: '',
-  extraSkills: '',
-  additionalInfo: '',
-};
-
+import { icons } from '../../../constants';
+import { useUpdateAppointmentStatusMutation } from '../../../api/individual-queries/appointments/mutations';
+import { useApplication } from '../../../api/individual-queries/appointments/queries';
+import StatusChip from '../../../components/StatusChip';
+import { useGlobalContext } from '../../../context/GlobalProvider';
+import Loader from '../../../components/Loader';
 const ApplicationDetail = () => {
-  const [form, setForm] = useState(initialState);
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useGlobalContext();
+  
+  console.log(user)
+  const { mutate: updateAppointmentStatus, isPending } =
+    useUpdateAppointmentStatusMutation({
+      onSuccess: () => {
+        router.back();
+      },
 
-  const { mutate: createApplication, loading } = useApiMutation(
-    applicationService.createApplication
-  );
-  const submit = async () => {
-    if (!isObjectFilledOut(form)) {
-      return Alert.alert('Please provide all fields');
-    }
+      onError: (error) => {
+        Alert.alert('Error', error.message);
+      },
+    });
 
-    try {
-      await createApplication({
-        ...form,
-        references: [
-          {
-            name: form.firstReferenceName,
-            relationship: form.firstReferenceRelationship,
-            phoneNumber: form.firstReferencePhoneNumber,
-            emailAddress: form.firstReferenceEmailAddress,
-          },
-          {
-            name: form.secondReferenceName,
-            relationship: form.secondReferenceRelationship,
-            phoneNumber: form.secondReferencePhoneNumber,
-            emailAddress: form.secondReferenceEmailAddress,
-          },
-        ],
-      });
-
-      Alert.alert('Success', 'Post uploaded successfully');
-      router.push('/home');
-    } catch (err) {
-      if (err instanceof ApiError) {
-        // Error is already captured in the hook
-        Alert.alert('Error', err.message);
+  const { data: applicationData } = useApplication({id }); 
+  const application = applicationData?.data;
+  const handleApprove = () => {
+    updateAppointmentStatus({
+      id,
+      params:{
+        status: 'accepted',
+      },
+    });
+  };
+  const handleReject = () => {
+    updateAppointmentStatus({
+      id,
+      params:{
+        status: 'rejected',
       }
-    } finally {
-      setForm(initialState);
-    }
+    });
   };
 
-  const application = {
-    studentName: 'John Doe',
-    studentNumber: '123456789',
-    address: '123 Main St, Toronto, ON',
-    phoneNumber: '123-456-7890',
-    alternateNumber: '987-654-3210',
-    emailAddress: 'john.doe@email.com',
-    programOfStudy: 'Computer Science',
-    currentTerm: '3',
-    numberOfTermsInProgram: '8',
-    campus: 'Trafalgar',
-    anticipatedGraduationDate: 'May 2026',
-    dietaryRestrictions: 'None',
-    shirtSize: 'Medium',
-    accommodationsRequired: 'None',
-    firstReferenceName: 'Dr. Jane Smith',
-    firstReferenceRelationship: 'Professor',
-    firstReferencePhoneNumber: '111-222-3333',
-    firstReferenceEmailAddress: 'jane.smith@faculty.edu',
-    secondReferenceName: 'Mr. Robert Johnson',
-    secondReferenceRelationship: 'Former Employer',
-    secondReferencePhoneNumber: '444-555-6666',
-    secondReferenceEmailAddress: 'robert.johnson@company.com',
-    whyInterested:
-      'I want to help first-year students navigate their academic journey.',
-    makingDifference:
-      'By sharing my experiences and providing guidance to new students.',
-    strengths: 'Communication, problem-solving, and patience.',
-    areasOfGrowth: 'Public speaking and time management.',
-    extraSkills: 'Fluent in three languages, experienced in tutoring.',
-    additionalInfo:
-      'I have participated in student orientation programs before.',
-  };
+  if (!application) {
+    return (
+      <Loader isLoading={isPending} />
+    );
+  }
 
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -135,7 +74,7 @@ const ApplicationDetail = () => {
           <Text className="text-2xl text-white font-psemibold">
             Application Detail
           </Text>
-          <View className="w-6 h-6" />
+          <StatusChip status={application.status}/>
         </View>
         <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
           <Text className="text-xl font-psemibold text-white mb-4">
@@ -265,28 +204,28 @@ const ApplicationDetail = () => {
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Name:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.firstReferenceName}
+              {application.references[0].name}
             </Text>
           </View>
 
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Relationship:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.firstReferenceRelationship}
+              {application.references[0].relationship}
             </Text>
           </View>
 
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Phone Number:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.firstReferencePhoneNumber}
+              {application.references[0].phoneNumber}
             </Text>
           </View>
 
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Email Address:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.firstReferenceEmailAddress}
+              {application.references[0].emailAddress}
             </Text>
           </View>
 
@@ -300,28 +239,28 @@ const ApplicationDetail = () => {
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Name:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.secondReferenceName}
+              {application.references[1].name}
             </Text>
           </View>
 
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Relationship:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.secondReferenceRelationship}
+              {application.references[1].relationship}
             </Text>
           </View>
 
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Phone Number:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.secondReferencePhoneNumber}
+              {application.references[1].phoneNumber}
             </Text>
           </View>
 
           <View className="flex-col items-start gap-1 mb-2 ml-2">
             <Text className="text-white font-pbold">Email Address:</Text>
             <Text className="text-gray-100 font-psemibold">
-              {application.secondReferenceEmailAddress}
+              {application.references[1].emailAddress}
             </Text>
           </View>
         </View>
@@ -380,23 +319,24 @@ const ApplicationDetail = () => {
             </Text>
           </View>
         </View>
-
-        <View className='flex-row items-center gap-2'>
+      {user?.role === 'admin' && (
+        <View className="flex-row items-center gap-2">
           <CustomButton
             title="Reject"
-            handlePress={submit}
+            handlePress={handleReject}
             containerStyle="mt-7 bg-status-rejected flex-1"
-            textStyle='text-white'
-            isLoading={loading}
+            textStyle="text-white"
+            isLoading={isPending}
           />
           <CustomButton
             title="Approve"
-            handlePress={submit}
-            containerStyle="mt-7 bg-status-approved flex-1"
-            textStyle='text-white'
-            isLoading={loading}
+            handlePress={handleApprove}
+            containerStyle="mt-7 bg-status-accepted flex-1"
+            textStyle="text-white"
+            isLoading={isPending}
           />
         </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

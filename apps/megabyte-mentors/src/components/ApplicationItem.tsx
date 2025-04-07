@@ -8,14 +8,15 @@ type ApplicationItemProps = {
   studentName: string;
   studentNumber: string;
   campus: string;
+  status: 'pending' | 'accepted' | 'rejected';
 };
 
 const ApplicationItem = (props: ApplicationItemProps) => {
-  const { _id, studentName, studentNumber, campus } = props;
+  const { _id, studentName, studentNumber, campus, status } = props;
   return (
     <TouchableOpacity
       className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4 mx-4"
-      onPress={() => router.push(`/application-detail`)}
+      onPress={() => router.push(`/application-detail/${_id}`)}
     >
       <View className="justify-between items-start flex-row">
         <View>
@@ -27,7 +28,7 @@ const ApplicationItem = (props: ApplicationItemProps) => {
           </Text>
           <Text className="font-pmedium text-sm text-gray-100">{campus}</Text>
         </View>
-        <StatusChip status="pending" />
+        <StatusChip status={status} />
       </View>
     </TouchableOpacity>
   );

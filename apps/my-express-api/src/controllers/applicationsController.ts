@@ -24,14 +24,14 @@ export const getApplications = async (req: Request, res: Response) => {
 				path: 'userId',
 				select: 'email',
 			});
-		res.status(200).json({ success: true, message: 'applications', data: result });
+		res.status(200).json({ success: true, page: page, limit: itemsPerPage,  message: 'applications', data: result });
 	} catch (error) {
 		console.log(error);
 	}
 };
 
 export const singleApplication = async (req: Request, res: Response) => {
-	const { _id } = req.query;
+	const { _id } = req.params;
 
 	try {
 		const existingApplication = await Application.findOne({ _id }).populate({
@@ -67,7 +67,7 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
 export const updateApplication = async (req: Request, res: Response) => {
     const { _id } = req.params; // Assuming the application ID is passed as a URL parameter
     const { status} = req.body; // status can be 'accepted' or 'rejected'
-
+		console.log(req.body)
     try {
         // Find the application by ID
         const existingApplication = await Application.findOne({ _id });
