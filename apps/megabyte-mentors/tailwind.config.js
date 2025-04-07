@@ -24,7 +24,7 @@ module.exports = {
               },
               status: {
                 pending: "#FF7966",
-                approved: "#48D065",
+                accepted: "#48D065",
                 rejected: "#D14249",
               }
             },

@@ -2,6 +2,7 @@ import { View, Image, ImageProps } from 'react-native'
 import React from 'react'
 import { Tabs } from 'expo-router'
 import { icons } from '../../constants' 
+import { useGlobalContext } from '../../context/GlobalProvider'
 
 const TabIcon = ({icon, color, name, focused}: {icon: ImageProps, color: string, name: string, focused: boolean}) => {
   return (
@@ -15,13 +16,14 @@ const TabIcon = ({icon, color, name, focused}: {icon: ImageProps, color: string,
 }
 
 const TabsLayout = () => {
+  const { user } = useGlobalContext();
   return (
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: "#FFA001",
+          tabBarActiveTintColor: "#00B1CD",
           tabBarInactiveTintColor: "#CDCDE0",
           tabBarStyle:{
-            backgroundColor: '#161622',
+            backgroundColor: user?.role === "admin" ? '#D14249' : '#161622',
             borderTopWidth: 1,
             borderTopColor: '#232533',
             height: 84
@@ -35,7 +37,6 @@ const TabsLayout = () => {
             <TabIcon icon={icons.home} color={color} name="Home" focused={focused} />
           )
         }} />
-      
         <Tabs.Screen name="application" options={{
           title: 'Application',
           headerShown: false,

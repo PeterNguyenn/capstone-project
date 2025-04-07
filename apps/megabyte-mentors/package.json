@@ -45,7 +45,11 @@
     "tailwindcss": "*",
     "expo-font": "*",
     "axios": "*",
-    "@react-native-async-storage/async-storage": "*"
+    "@react-native-async-storage/async-storage": "*",
+    "@tanstack/react-query": "*",
+    "@react-native-picker/picker": "*",
+    "react-native-dropdown-select-list": "*",
+    "react-native-progress-steps": "*"
   },
   "devDependencies": {
     "tailwindcss": "*"

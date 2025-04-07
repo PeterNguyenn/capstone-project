@@ -1,24 +1,19 @@
-import { View, Text, TouchableOpacity, Image, FlatList } from 'react-native';
+import { View, TouchableOpacity, Image, } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import EmptyState from '../../components/EmptyState';
-import { icons } from '../../constants';
+import { icons, images } from '../../constants';
 import { useApiMutation } from '../../api/hooks';
 import authService from '../../api/services/auth.service';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { router } from 'expo-router';
-interface Item {
-  id: number;
-  name?: string;
-}
+import InfoBox from '../../components/InfoBox';
 
 const Profile = () => {
-  const { setUser, setIsLoggedIn } = useGlobalContext();
+  const { setUser, setIsLoggedIn, user } = useGlobalContext();
 
   const { mutate: signOut } = useApiMutation(
     authService.signOut
   );
-  const data: Item[] = [];
 
 
   const logout = async () => {
@@ -30,22 +25,7 @@ const Profile = () => {
   };
   return (
     <SafeAreaView className="bg-primary h-full">
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <Text className="text-3xl text-white">
-            {item?.id ? item.name || `Item ${item.id}` : null}
-          </Text>
-        )}
-        ListEmptyComponent={() => (
-          <EmptyState
-            title="No Thing to Look here"
-            subtitle="I'm not done yet"
-          />
-        )}
-        ListHeaderComponent={() => (
-          <View className="w-full flex justify-center items-center mt-6 mb-12 px-4">
+      <View className="w-full flex justify-center items-center mt-6 mb-12 px-4">
             <TouchableOpacity
               onPress={logout}
               className="flex w-full items-end mb-10"
@@ -59,14 +39,28 @@ const Profile = () => {
 
             <View className="w-16 h-16 border border-secondary rounded-lg flex justify-center items-center">
               <Image
-                source={icons.play}
+                source={images.profile}
                 className="w-[90%] h-[90%] rounded-lg"
                 resizeMode="cover"
               />
             </View>
+
+            <InfoBox
+              title={user?.name ?? ''}
+              containerStyles="mt-10"
+              titleStyles="text-lg"
+            />
+            <InfoBox
+              title={user?.email ?? ''}
+              containerStyles="mt-3"
+              titleStyles="text-lg"
+            />
+            <InfoBox
+              title={user?.role ?? ''}
+              containerStyles="mt-3"
+              titleStyles="text-lg"
+            />
           </View>
-        )}
-      />
     </SafeAreaView>
   );
 };

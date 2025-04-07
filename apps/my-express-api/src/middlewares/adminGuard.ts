@@ -11,11 +11,12 @@ export const adminGuard = (req, res, next) => {
   }
 
   try {
+    console.log('Decoding token:', token);
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
     
     // Attach user to request (just like in identifier.ts)
     req.user = decoded;
-
+    console.log('aa token:', req.user);
     // Check for admin role
     if (req.user.role !== 'admin') {
       return res.status(403).json({ 
