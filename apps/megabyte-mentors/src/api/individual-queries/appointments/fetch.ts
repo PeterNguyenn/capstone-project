@@ -6,6 +6,8 @@ import { ApplicationRo, GetApplicationsDto } from "./types";
 export const fetchApplications = async (
   params?: GetApplicationsDto,
 ): Promise<PaginatedResponse<ApplicationRo>> => {
+
+  console.log(params)
   const { data } = await apiClient.get<PaginatedResponse<ApplicationRo>>(
     '/api/applications',
     {

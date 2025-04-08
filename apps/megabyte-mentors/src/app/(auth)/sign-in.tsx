@@ -52,15 +52,17 @@ const SignIn = () => {
             handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles='mt-7'
             keyboardType='email-address'
+            testID='signin-email-field'
           />
           <FormField
             title="Password"
             value={form.password}
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles='mt-7'
+            testID='signin-password-field'
           />
 
-          <CustomButton title='Sign In' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} />
+          <CustomButton title='Sign In' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} testID='signin-button' />
           <View className='justify-center pt-5 flex-row gap-2'>
             <Text className='text-lg text-gray-100 font-pregular'>Don't have an account?</Text>
             <Link href='/sign-up' className='text-secondary font-psemibold text-lg' testID='signup-link'>Sign Up</Link>
