@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 import { AuthRequest } from "./authController";
 
 export const getApplications = async (req: Request, res: Response) => {
-	const { page } = req.query;
+	const { page , userId } = req.query;
 	const itemsPerPage = 10;
-
+	console.log(page, userId);
 	try {
 		let pageNum = 0;
 		if (typeof page === 'string') {
@@ -16,7 +16,15 @@ export const getApplications = async (req: Request, res: Response) => {
 				pageNum = parsedPage - 1;
 			}
 		}
-		const result = await Application.find()
+
+		// Create a filter object that will be used in the find query
+    const filter: { userId?: string } = {};
+    
+    // Add userId to filter if it exists
+    if (userId && typeof userId === 'string') {
+      filter.userId = userId;
+    }
+		const result = await Application.find(filter)
 			.sort({ createdAt: -1 })
 			.skip(pageNum * itemsPerPage)
 			.limit(itemsPerPage)

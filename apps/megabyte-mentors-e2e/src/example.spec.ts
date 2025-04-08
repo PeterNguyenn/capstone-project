@@ -35,3 +35,28 @@ test('sign up flow', async ({ page }) => {
   await expect(await page.getByTestId('welcome')).toBeVisible();
 
 });
+
+test('sign in flow', async ({ page }) => {
+  await page.goto('http://localhost:8081');
+  const homeLogo = await page.getByTestId('home-logo');
+  await expect(homeLogo).toBeVisible();
+  // Expect h1 to contain a substring.
+  const continueEmail = await page.getByTestId('continue-email');
+  // expect(continueEmail.innerText()).toContain('Continue with Email');
+
+  await continueEmail.click();
+
+  await page.waitForURL('**/sign-in');
+  expect(page.url()).toBe('http://localhost:8081/sign-in');
+
+  await page.getByTestId('signin-email-field').fill('admin@gmail.com');
+  await page.getByTestId('signin-password-field').fill('Admin123');
+
+  const signinButton = await page.getByTestId('signin-button');
+  await signinButton.click();
+
+  await page.waitForURL('**/home');
+  expect(page.url()).toBe('http://localhost:8081/home');
+
+  await expect(await page.getByTestId('welcome')).toBeVisible();
+})
