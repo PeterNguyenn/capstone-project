@@ -4,7 +4,7 @@ import { handleApiError } from './utils';
 import { ErrorResponse } from './types';
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'http://192.168.0.13:3000',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
