@@ -60,6 +60,8 @@ const authService = {
     const response = await apiClient.get<ApiResponse<ProfileResponseData>>(
       '/api/auth/me'
     );
+
+    console.log('Profile Response:', response.data);
     return response.data;
   },
 };
