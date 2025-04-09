@@ -9,6 +9,7 @@ import { useApiMutation } from '../../api/hooks'
 import authService from '../../api/services/auth.service'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ApiError } from '../../api/utils'
+import { useGlobalContext } from '../../context/GlobalProvider'
 
 
 const SignIn = () => {
@@ -16,6 +17,7 @@ const SignIn = () => {
     email: '',
     password: ''
   })
+    const { setUser } = useGlobalContext();
 
   const { mutate: signIn, loading } = useApiMutation(
     authService.signIn
@@ -29,6 +31,8 @@ const SignIn = () => {
       const response = await signIn(form);
       // Store token
       await AsyncStorage.setItem('auth_token', response.data.token);
+      const userdata = await authService.getProfile();
+      setUser(userdata.data.user);
       // Navigate to home screen
       router.replace('/home');
     } catch (err: unknown) {

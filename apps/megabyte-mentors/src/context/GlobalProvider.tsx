@@ -28,6 +28,7 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
   const { data, loading, error } = useApiQuery(authService.getProfile);
 
   useEffect(() => {
+    console.log('data', data);
     if (data) {
       setUser(data.data.user);
       setIsLoggedIn(true);
