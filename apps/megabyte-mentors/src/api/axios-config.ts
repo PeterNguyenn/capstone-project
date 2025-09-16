@@ -38,6 +38,7 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError<ErrorResponse>) => {
     // Check if unauthorized (401) for token refresh or logout
+    console.log('Response error:', error.response);
     if (error.response?.status === 401) {
       // Option 1: Try to refresh token
       // const refreshed = await refreshToken();

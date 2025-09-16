@@ -6,6 +6,7 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import GlobalProvider from "../context/GlobalProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NotificationProvider } from "../context/NotificationProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -39,14 +40,16 @@ const RootLayout = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <GlobalProvider>
-        <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="(application)" options={{ headerShown: false }} />
-            {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
-            {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
-        </Stack>
+        <NotificationProvider>
+          <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="(application)" options={{ headerShown: false }} />
+              {/* <Stack.Screen name="/search/[query]" options={{ headerShown: false }} /> */}
+              {/* <Stack.Screen name="profile" options={{ headerShown: false }} /> */}
+          </Stack>
+        </NotificationProvider>
       </GlobalProvider>
     </QueryClientProvider>
   );

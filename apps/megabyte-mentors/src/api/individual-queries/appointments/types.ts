@@ -45,3 +45,17 @@ export type ApplicationRo = CreateApplicationDto & {
   updatedAt: string,
   status: ApplicationStatus,
 }
+
+export type NotificationTokenDto = {
+  token: string,
+  platform: 'ios' | 'android' | 'web',
+  deviceId?: string,
+  appVersion?: string,
+  userId?: string,
+}
+
+export type NotificationTokenRo = {
+  success: boolean, 
+  message: string,
+  tokenId: string
+}
