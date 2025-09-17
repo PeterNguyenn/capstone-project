@@ -40,6 +40,7 @@ const authService = {
   },
 
   signUp: async (userData: SignUpData): Promise<ApiResponse<AuthResponseData>> => {
+    console.log('Signing up with data:', userData);
     const response = await apiClient.post<ApiResponse<AuthResponseData>>(
       '/api/auth/signup', 
       userData

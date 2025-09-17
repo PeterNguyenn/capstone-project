@@ -10,6 +10,7 @@ import authService from '../../api/services/auth.service'
 import { ApiError } from '../../api/utils'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useGlobalContext } from '../../context/GlobalProvider'
+import { useNotifications } from '../../context/NotificationProvider'
 
 const SignUp = () => {
   const [form, setForm] = useState({
@@ -23,6 +24,7 @@ const SignUp = () => {
   );
 
   const {setIsLoggedIn, setUser} =useGlobalContext();
+  const {updateUserToken} = useNotifications();
 
   const handleSubmit = async () => {
     if(!form.username || !form.email || !form.password) {
@@ -37,6 +39,8 @@ const SignUp = () => {
 
       setIsLoggedIn(true);
       setUser(response.data.user);
+      updateUserToken(response.data.user._id);
+
       // Store token
       await AsyncStorage.setItem('auth_token', response.data.token);
       // Navigate to home screen

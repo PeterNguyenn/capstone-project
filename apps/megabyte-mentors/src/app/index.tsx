@@ -8,8 +8,14 @@ import { Redirect, router } from 'expo-router'
 import { useGlobalContext } from '../context/GlobalProvider'
 
 const App = () => {
-  const { loading , isLoggedIn } = useGlobalContext();
-  if(!loading && isLoggedIn) return <Redirect href={'/home'} />
+  const { loading , isLoggedIn, user } = useGlobalContext();
+  if(!loading && isLoggedIn) {
+    if(user?.role === 'admin') {
+      return <Redirect href={'/admin-home'} />
+    }
+    return <Redirect href={'/home'} />
+  }
+  
   return (
     <SafeAreaView className="bg-primary h-full">
       <ScrollView contentContainerStyle={{ height: '100%' }}>

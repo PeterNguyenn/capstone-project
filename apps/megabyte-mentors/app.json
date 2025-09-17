@@ -17,6 +17,12 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "notification": {
+      "icon": "./assets/images/logo-small.png",
+      "color": "#ffffff",
+      "androidMode": "default",
+      "androidCollapsedTitle": "New notification"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.thongnguyensheridan.megabytementors",
@@ -29,6 +35,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
+      "notifications": {
+        "icon": "./assets/images/logo-small.png",
+        "color": "#ffffff"
+      },
       "package": "com.thongnguyensheridan.megabytementors"
     },
     "web": {
@@ -36,7 +46,8 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {

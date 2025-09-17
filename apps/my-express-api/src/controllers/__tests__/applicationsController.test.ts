@@ -2,8 +2,12 @@ import { Request, Response } from 'express';
 import { getApplications, singleApplication, createApplication, updateApplication } from '../applicationsController';
 import Application from '../../models/applicationsModel';
 import { AuthRequest } from '../authController';
+import { sendPushNotification } from '../notificationController';
 
 jest.mock('../../models/applicationsModel');
+jest.mock('../notificationController', () => ({
+  sendPushNotification: jest.fn()
+}));
 
 describe('Applications Controller', () => {
   let mockRequest: Partial<Request>;
@@ -137,6 +141,7 @@ describe('Applications Controller', () => {
       const mockExistingApplication = {
         _id: 'test-id',
         status: 'pending',
+        userId: 'user-id',
         save: jest.fn().mockResolvedValue({
           _id: 'test-id',
           status: 'accepted'
@@ -147,12 +152,19 @@ describe('Applications Controller', () => {
       mockRequest.body = { status: 'accepted' };
       
       (Application.findOne as jest.Mock).mockResolvedValue(mockExistingApplication);
-  
+      (sendPushNotification as jest.Mock).mockResolvedValue(undefined);
+
       await updateApplication(mockRequest as Request, mockResponse as Response);
   
       expect(Application.findOne).toHaveBeenCalledWith({ _id: 'test-id' });
       expect(mockExistingApplication.status).toBe('accepted');
       expect(mockExistingApplication.save).toHaveBeenCalled();
+      expect(sendPushNotification).toHaveBeenCalledWith(
+        'Application Status Updated',
+        'Your application status has been updated to: accepted',
+        {},
+        'user-id'
+      );
       expect(mockResponse.status).toHaveBeenCalledWith(200);
       expect(mockResponse.json).toHaveBeenCalledWith({
         success: true,

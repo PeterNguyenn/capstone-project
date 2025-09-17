@@ -49,7 +49,9 @@
     "@tanstack/react-query": "*",
     "@react-native-picker/picker": "*",
     "react-native-dropdown-select-list": "*",
-    "react-native-progress-steps": "*"
+    "react-native-progress-steps": "*",
+    "expo-notifications": "*",
+    "expo-device": "*"
   },
   "devDependencies": {
     "tailwindcss": "*"

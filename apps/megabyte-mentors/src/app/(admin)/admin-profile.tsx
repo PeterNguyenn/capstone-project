@@ -7,11 +7,9 @@ import authService from '../../api/services/auth.service';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import { router } from 'expo-router';
 import InfoBox from '../../components/InfoBox';
-import { useNotifications } from '../../context/NotificationProvider';
 
 const Profile = () => {
   const { setUser, setIsLoggedIn, user } = useGlobalContext();
-  const { deactivateToken } = useNotifications();
   const { mutate: signOut } = useApiMutation(
     authService.signOut
   );
@@ -21,7 +19,6 @@ const Profile = () => {
     await signOut(null);
     setUser(null);
     setIsLoggedIn(false);
-    deactivateToken();
     router.replace("/sign-in");
   };
   return (

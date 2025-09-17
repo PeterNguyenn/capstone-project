@@ -12,6 +12,7 @@ import mongoose from 'mongoose';
 import authRouter from './routers/authRouter';
 import postsRouter from './routers/postRouter';
 import applicationRouter from './routers/applicationRouter';
+import notificationRouter from './routers/notificationRouter';
 
 const app = express();
 
@@ -32,6 +33,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/posts', postsRouter);
 
 app.use('/api/applications', applicationRouter);
+
+app.use('/api/notifications', notificationRouter);
 
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
