@@ -39,10 +39,13 @@ const SignIn = () => {
 
       if(userdata.data.user.role !== 'admin') {
         updateUserToken(userdata.data.user._id);
+
+        router.replace('/home');
+      } else {
+        router.replace('/admin-home');
       }
-      
+
       // Navigate to home screen
-      router.replace('/home');
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         // Error is already captured in the hook
