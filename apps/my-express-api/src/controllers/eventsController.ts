@@ -9,23 +9,15 @@ const userId  = (req: Request) => (req.header('x-user-id') || '').trim();
 const toDate = (date: string, time: string) => new Date(`${date}T${time}`);
 const bad = (res: Response, msg: string, code = 400) => res.status(code).json({ error: msg });
 
-export async function createEvent(req: Request, res: Response) {
-  try {
-    if (!isAdmin(req)) return bad(res, 'permission denied', 403);
-
-    const {
+export const createEvent = async (req: Request, res: Response) => {
+	try {
+		const {
       title, shortDescription, date, startTime, endTime,
       capacity, campus, location, status = 'published', createdBy
     } = req.body ?? {};
-
-    const required = { title, shortDescription, date, startTime, endTime, capacity, campus, location };
-    for (const [k, v] of Object.entries(required))
-      if (v === undefined || v === null || v === '') return bad(res, `Missing field: ${k}`);
-
-    if (Number(capacity) <= 0) return bad(res, 'capacity must be > 0');
-
     const startsAt = toDate(date, startTime);
     const endsAt   = toDate(date, endTime);
+  
     if (isNaN(startsAt.getTime()) || isNaN(endsAt.getTime())) return bad(res, 'invalid date/time');
     if (startsAt.getTime() <= Date.now()) return bad(res, 'event must be in the future');
     if (endsAt <= startsAt) return bad(res, 'endTime must be after startTime');
@@ -35,12 +27,44 @@ export async function createEvent(req: Request, res: Response) {
       startsAt, endsAt, capacity: Number(capacity),
       campus, location, status, createdBy
     });
-    return res.status(201).json(doc);
-  } catch (e: any) {
-    console.error('createEvent', e);
-    return bad(res, e?.message ?? 'internal', 500);
-  }
-}
+
+		res.status(201).json({ success: true, message: 'created', data: doc });
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+// export async function createEvent(req: Request, res: Response) {
+//   try {
+
+//     const {
+//       title, shortDescription, date, startTime, endTime,
+//       capacity, campus, location, status = 'published', createdBy
+//     } = req.body ?? {};
+
+//     const required = { title, shortDescription, date, startTime, endTime, capacity, campus, location };
+//     for (const [k, v] of Object.entries(required))
+//       if (v === undefined || v === null || v === '') return bad(res, `Missing field: ${k}`);
+
+//     if (Number(capacity) <= 0) return bad(res, 'capacity must be > 0');
+
+//     const startsAt = toDate(date, startTime);
+//     const endsAt   = toDate(date, endTime);
+//     if (isNaN(startsAt.getTime()) || isNaN(endsAt.getTime())) return bad(res, 'invalid date/time');
+//     if (startsAt.getTime() <= Date.now()) return bad(res, 'event must be in the future');
+//     if (endsAt <= startsAt) return bad(res, 'endTime must be after startTime');
+
+//     const doc = await Event.create({
+//       title, shortDescription, date, startTime, endTime,
+//       startsAt, endsAt, capacity: Number(capacity),
+//       campus, location, status, createdBy
+//     });
+//     return res.status(201).json(doc);
+//   } catch (e: any) {
+//     console.error('createEvent', e);
+//     return bad(res, e?.message ?? 'internal', 500);
+//   }
+// }
 
 export async function listEvents(req: Request, res: Response) {
   try {

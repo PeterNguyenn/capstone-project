@@ -1,10 +1,13 @@
-import { View, TouchableOpacity, Image, ScrollView, Text} from 'react-native';
+import { View, TouchableOpacity, Image, ScrollView, Text, Alert} from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import FormField from '../../components/FormField';
 import PickerField from '../../components/PickerField';
 import { campusOptions } from '../../constants/data';
 import CustomButton from '../../components/CustomButton';
+import eventService from '../../api/services/event.service';
+import { useApiMutation } from '../../api/hooks';
+import { ApiError } from '../../api/utils';
 
 const Event = () => {
   const [form, setForm] = useState({
@@ -18,8 +21,32 @@ const Event = () => {
       campus: '',
   })
 
+  const { mutate: createEvent, loading } = useApiMutation(
+    eventService.createEvent
+  );
+
   const handleSubmit = async () => {
-    console.log('Event form submitted:', form);
+    try {
+      const response = await createEvent({
+        title: form.title,
+        shortDescription: form.description,
+        date: form.date,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        location: form.location,
+        capacity: parseInt(form.capacity, 10),
+        campus: form.campus,
+        status: 'published'
+      });
+      console.log('Event created successfully:', response);
+
+      Alert.alert('Success', 'Successfully created event');
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        // Error is already captured in the hook
+        console.log(err.message);
+      }
+    }
     // Here you would typically send the form data to your backend API
   }
   
@@ -56,28 +83,28 @@ const Event = () => {
           />
           <FormField
             title="Start Time"
-            value={form.date}
+            value={form.startTime}
             placeholder="Enter start time..."
             handleChangeText={(e) => setForm({ ...form, startTime: e })}
             otherStyles="mt-10"
           />
           <FormField
             title="End Time"
-            value={form.date}
+            value={form.endTime}
             placeholder="Enter end time..."
             handleChangeText={(e) => setForm({ ...form, endTime: e })}
             otherStyles="mt-10"
           />
           <FormField
             title="Location"
-            value={form.date}
+            value={form.location}
             placeholder="Enter location..."
             handleChangeText={(e) => setForm({ ...form, location: e })}
             otherStyles="mt-10"
           />
           <FormField
             title="Capacity"
-            value={form.date}
+            value={form.capacity}
             placeholder="Enter limit of participants..."
             handleChangeText={(e) => setForm({ ...form, capacity: e })}
             otherStyles="mt-10"
@@ -89,7 +116,7 @@ const Event = () => {
             handleChangeText={(e) => setForm({ ...form, campus: e })}
           />
 
-          <CustomButton title='Create Event' handlePress={handleSubmit} containerStyle='mt-7' testID='create-event' />
+          <CustomButton title='Create Event' handlePress={handleSubmit} isLoading={loading} containerStyle='mt-7' testID='create-event' />
 
       </ScrollView>
     </SafeAreaView>
