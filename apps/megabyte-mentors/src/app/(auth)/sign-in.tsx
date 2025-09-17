@@ -10,6 +10,7 @@ import authService from '../../api/services/auth.service'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ApiError } from '../../api/utils'
 import { useGlobalContext } from '../../context/GlobalProvider'
+import { useNotifications } from '../../context/NotificationProvider'
 
 
 const SignIn = () => {
@@ -17,7 +18,8 @@ const SignIn = () => {
     email: '',
     password: ''
   })
-    const { setUser } = useGlobalContext();
+  const { setUser } = useGlobalContext();
+  const {updateUserToken} = useNotifications();
 
   const { mutate: signIn, loading } = useApiMutation(
     authService.signIn
@@ -29,12 +31,21 @@ const SignIn = () => {
     }
     try {
       const response = await signIn(form);
+      console.log('Sign-in response:', response);
       // Store token
       await AsyncStorage.setItem('auth_token', response.data.token);
       const userdata = await authService.getProfile();
       setUser(userdata.data.user);
+
+      if(userdata.data.user.role !== 'admin') {
+        updateUserToken(userdata.data.user._id);
+
+        router.replace('/home');
+      } else {
+        router.replace('/admin-home');
+      }
+
       // Navigate to home screen
-      router.replace('/home');
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         // Error is already captured in the hook

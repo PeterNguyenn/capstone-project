@@ -15,34 +15,33 @@ const TabIcon = ({icon, color, name, focused}: {icon: ImageProps, color: string,
 }
 
 const TabsLayout = () => {
-
   return (
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "#00B1CD",
           tabBarInactiveTintColor: "#CDCDE0",
           tabBarStyle:{
-            backgroundColor: '#161622',
+            backgroundColor: '#D14249',
             borderTopWidth: 1,
             borderTopColor: '#232533',
             height: 84
           }
           // tabBarShowLabel: false,
         }}>
-        <Tabs.Screen name="home" options={{
+        <Tabs.Screen name="admin-home" options={{
           title: 'Home',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon icon={icons.home} color={color} name="Home" focused={focused} />
           )
         }} />
-        <Tabs.Screen name="application" options={{
-          title: 'Application',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon icon={icons.bookmark} color={color} name="Application" focused={focused} />
-          )
-        }} />
+        <Tabs.Screen name="admin-event" options={{
+            title: 'Event',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon icon={icons.bookmark} color={color} name="Event" focused={focused} />
+            )
+          }} />
         {/* <Tabs.Screen name="create" options={{
           title: 'Create',
           headerShown: false,
@@ -50,7 +49,7 @@ const TabsLayout = () => {
             <TabIcon icon={icons.plus} color={color} name="Create" focused={focused} />
           )
         }} /> */}
-        <Tabs.Screen name="profile" options={{
+        <Tabs.Screen name="admin-profile" options={{
           title: 'Profile',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (

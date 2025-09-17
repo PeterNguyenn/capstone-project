@@ -1,6 +1,7 @@
 import Application from "../models/applicationsModel";
 import { Request, Response } from "express";
 import { AuthRequest } from "./authController";
+import { sendPushNotification } from "./notificationController";
 
 export const getApplications = async (req: Request, res: Response) => {
 	const { page , userId } = req.query;
@@ -88,7 +89,14 @@ export const updateApplication = async (req: Request, res: Response) => {
         existingApplication.status = status;
         //existingApplication.adminComments = adminComments;
         //existingApplication.reviewedAt = new Date();
-
+				await sendPushNotification(
+					'Application Status Updated',
+					`Your application status has been updated to: ${status}`,
+					{},
+					existingApplication.userId
+				).catch((error) => {
+					console.error('Error sending push notification:', error);
+				});
         // Save the updated application
         await existingApplication.save();
 

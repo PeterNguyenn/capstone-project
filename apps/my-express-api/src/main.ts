@@ -14,6 +14,7 @@ import authRouter from './routers/authRouter';
 import postsRouter from './routers/postRouter';
 import applicationRouter from './routers/applicationRouter';
 import eventRouter from './routers/eventRouter'; // ← NEW
+import notificationRouter from './routers/notificationRouter';
 
 const app = express();
 
@@ -38,8 +39,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/posts', postsRouter);
 app.use('/api/applications', applicationRouter);
 app.use('/api/events', eventRouter); // ← NEW
+app.use('/api/notifications', notificationRouter);
 
-// static
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // root ping
