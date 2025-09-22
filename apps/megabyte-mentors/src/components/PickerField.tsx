@@ -31,14 +31,8 @@ const PickerField = ({
 }) => {
   const [selectedValue, setSelectedValue] = useState('option1');
 
-  const options = [
-    { key: '1', label: "111", value: 'Option 1' },
-    { key: '2',label: "112", value: 'Option 2' },
-    { key: '3',label: "113", value: 'Option 3' },
-  ];
-
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
+    <View className={`space-y-2 ${otherStyles}`} testID={props.testID}>
       <Text className="text-base text-gray-100 font-pmedium">{title}</Text>
       <SelectList
         data={data}
@@ -68,6 +62,7 @@ const PickerField = ({
         }}
         searchicon={<Image source={icons.search} className="w-5 h-5 mr-2" />}
         placeholder={"Select"}
+        {...props}
       />
     </View>
   );

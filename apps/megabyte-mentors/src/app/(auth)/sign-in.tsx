@@ -19,7 +19,7 @@ const SignIn = () => {
     password: ''
   })
   const { setUser } = useGlobalContext();
-  const {updateUserToken} = useNotifications();
+  const {updateUserToken, isInitialized} = useNotifications();
 
   const { mutate: signIn, loading } = useApiMutation(
     authService.signIn
@@ -37,7 +37,7 @@ const SignIn = () => {
       const userdata = await authService.getProfile();
       setUser(userdata.data.user);
 
-      if(userdata.data.user.role !== 'admin') {
+      if(userdata.data.user.role !== 'admin' && isInitialized) {
         updateUserToken(userdata.data.user._id);
 
         router.replace('/home');

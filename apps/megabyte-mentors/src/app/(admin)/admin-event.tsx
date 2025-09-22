@@ -53,7 +53,7 @@ const Event = () => {
   return (
     <SafeAreaView className="bg-primary h-full">
       <ScrollView className="px-4 my-6">
-          <Text className="text-2xl text-white font-psemibold">
+          <Text className="text-2xl text-white font-psemibold" testID='event-title'>
             Create Event & workshop
           </Text>
           <FormField
@@ -62,6 +62,7 @@ const Event = () => {
             placeholder="Enter your title..."
             handleChangeText={(e) => setForm({ ...form, title: e })}
             otherStyles="mt-10"
+            testID='event-title-input'
           />
           <FormField
             title="Description"
@@ -73,6 +74,7 @@ const Event = () => {
             numberOfLines={4}
             maxLength={250}
             inputStyles="h-48"
+            testID='event-description-input'
           />
           <FormField
             title="Date"
@@ -80,6 +82,7 @@ const Event = () => {
             placeholder="Enter date..."
             handleChangeText={(e) => setForm({ ...form, date: e })}
             otherStyles="mt-10"
+            testID='event-date-input'
           />
           <FormField
             title="Start Time"
@@ -87,6 +90,7 @@ const Event = () => {
             placeholder="Enter start time..."
             handleChangeText={(e) => setForm({ ...form, startTime: e })}
             otherStyles="mt-10"
+            testID='event-starttime-input'
           />
           <FormField
             title="End Time"
@@ -94,6 +98,7 @@ const Event = () => {
             placeholder="Enter end time..."
             handleChangeText={(e) => setForm({ ...form, endTime: e })}
             otherStyles="mt-10"
+            testID='event-endtime-input'
           />
           <FormField
             title="Location"
@@ -101,6 +106,7 @@ const Event = () => {
             placeholder="Enter location..."
             handleChangeText={(e) => setForm({ ...form, location: e })}
             otherStyles="mt-10"
+            testID='event-location-input'
           />
           <FormField
             title="Capacity"
@@ -108,12 +114,15 @@ const Event = () => {
             placeholder="Enter limit of participants..."
             handleChangeText={(e) => setForm({ ...form, capacity: e })}
             otherStyles="mt-10"
+            keyboardType='numeric'
+            testID='event-capacity-input'
           />
           <PickerField
             data={campusOptions}
             title="Campus"
             otherStyles="mt-6"
             handleChangeText={(e) => setForm({ ...form, campus: e })}
+            testID='event-campus-input'
           />
 
           <CustomButton title='Create Event' handlePress={handleSubmit} isLoading={loading} containerStyle='mt-7' testID='create-event' />
