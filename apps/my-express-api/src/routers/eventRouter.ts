@@ -4,7 +4,7 @@ import {
   joinEvent, leaveEvent
 } from '../controllers/eventsController';
 import { adminGuard } from '../middlewares/adminGuard';
-import { identifier } from '../middlewares/identification';
+import { mentorGuard } from '../middlewares/mentorGuard';
 import { validate } from '../middlewares/validations';
 import { CreateEventSchema } from '../types/event/create-event-body.dto';
 
@@ -16,9 +16,9 @@ router.patch('/:id',adminGuard, updateEvent);
 router.post('/:id/cancel',adminGuard, cancelEvent);
 
 // Public / Mentors
-router.get('/',identifier, listEvents);
-router.get('/:id',identifier, getEvent);
-router.post('/:id/join',identifier, joinEvent);
-router.post('/:id/leave',identifier, leaveEvent);
+router.get('/',mentorGuard, listEvents);
+router.get('/:id',mentorGuard, getEvent);
+router.post('/:id/join',mentorGuard, joinEvent);
+router.post('/:id/leave',mentorGuard, leaveEvent);
 
 export default router;
