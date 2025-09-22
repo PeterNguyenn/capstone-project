@@ -3,9 +3,9 @@ import React from 'react'
 import { Tabs } from 'expo-router'
 import { icons } from '../../constants' 
 
-const TabIcon = ({icon, color, name, focused}: {icon: ImageProps, color: string, name: string, focused: boolean}) => {
+const TabIcon = ({icon, color, name, focused, testID}: {icon: ImageProps, color: string, name: string, focused: boolean, testID?: string}) => {
   return (
-    <View className='flex items-center justify-center gap-2'>
+    <View className='flex items-center justify-center gap-2' testID={testID}>
       <Image source={icon} resizeMode='contain' tintColor={color} className="w-8 h-6" />
       {/* <Text className={`${focused ? 'font-psemibold' : 'font-pregular'} text-xs`}>
         {name}
@@ -39,8 +39,8 @@ const TabsLayout = () => {
             title: 'Event',
             headerShown: false,
             tabBarIcon: ({ color, focused }) => (
-              <TabIcon icon={icons.bookmark} color={color} name="Event" focused={focused} />
-            )
+              <TabIcon icon={icons.bookmark} color={color} name="Event" focused={focused} testID='event-page' />
+            ),
           }} />
         {/* <Tabs.Screen name="create" options={{
           title: 'Create',

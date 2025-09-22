@@ -24,7 +24,7 @@ const SignUp = () => {
   );
 
   const {setIsLoggedIn, setUser} =useGlobalContext();
-  const {updateUserToken} = useNotifications();
+  const {updateUserToken, isInitialized} = useNotifications();
 
   const handleSubmit = async () => {
     if(!form.username || !form.email || !form.password) {
@@ -39,7 +39,9 @@ const SignUp = () => {
 
       setIsLoggedIn(true);
       setUser(response.data.user);
-      updateUserToken(response.data.user._id);
+      if(response.data.user.role !== 'admin' && isInitialized) {
+        updateUserToken(response.data.user._id);
+      }
 
       // Store token
       await AsyncStorage.setItem('auth_token', response.data.token);

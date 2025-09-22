@@ -66,6 +66,11 @@ class NotificationService {
   }
 
   private async registerForPushNotifications(): Promise<string | undefined> {
+    if (Platform.OS === 'web') {
+      console.log('Notification service is not supported on web.');
+      return;
+    }
+    
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'default',
@@ -74,6 +79,8 @@ class NotificationService {
         lightColor: '#FF231F7C',
       });
     }
+
+    console.log('Device info:', Device);
 
     if (!Device.isDevice) {
       console.warn('Must use physical device for Push Notifications');

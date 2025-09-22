@@ -11,17 +11,20 @@ import { useNotifications } from '../../context/NotificationProvider';
 
 const Profile = () => {
   const { setUser, setIsLoggedIn, user } = useGlobalContext();
-  const { deactivateToken } = useNotifications();
+  const { deactivateToken, isInitialized } = useNotifications();
   const { mutate: signOut } = useApiMutation(
     authService.signOut
   );
 
 
   const logout = async () => {
+    if(user && user.role !== 'admin' && isInitialized) {
+      deactivateToken();
+    }
     await signOut(null);
     setUser(null);
     setIsLoggedIn(false);
-    deactivateToken();
+
     router.replace("/sign-in");
   };
   return (
