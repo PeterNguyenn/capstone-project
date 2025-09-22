@@ -55,7 +55,7 @@ test('sign in flow', async ({ page }) => {
   const signinButton = await page.getByTestId('signin-button');
   await signinButton.click();
 
-  await page.waitForURL('**/home');
+  await page.waitForURL('**/admin-home');
   expect(page.url()).toBe('http://localhost:8081/admin-home');
 
   await expect(await page.getByTestId('welcome')).toBeVisible();
