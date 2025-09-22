@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 import Event from '../models/eventsModel';
 import Registration from '../models/registrationModel';
 
-const isAdmin = (req: Request) => (req.header('x-role') || '').toLowerCase() === 'admin';
 const userId  = (req: Request) => (req.header('x-user-id') || '').trim();
 
 const toDate = (date: string, time: string) => new Date(`${date}T${time}`);
@@ -34,66 +33,35 @@ export const createEvent = async (req: Request, res: Response) => {
 	}
 };
 
-// export async function createEvent(req: Request, res: Response) {
-//   try {
-
-//     const {
-//       title, shortDescription, date, startTime, endTime,
-//       capacity, campus, location, status = 'published', createdBy
-//     } = req.body ?? {};
-
-//     const required = { title, shortDescription, date, startTime, endTime, capacity, campus, location };
-//     for (const [k, v] of Object.entries(required))
-//       if (v === undefined || v === null || v === '') return bad(res, `Missing field: ${k}`);
-
-//     if (Number(capacity) <= 0) return bad(res, 'capacity must be > 0');
-
-//     const startsAt = toDate(date, startTime);
-//     const endsAt   = toDate(date, endTime);
-//     if (isNaN(startsAt.getTime()) || isNaN(endsAt.getTime())) return bad(res, 'invalid date/time');
-//     if (startsAt.getTime() <= Date.now()) return bad(res, 'event must be in the future');
-//     if (endsAt <= startsAt) return bad(res, 'endTime must be after startTime');
-
-//     const doc = await Event.create({
-//       title, shortDescription, date, startTime, endTime,
-//       startsAt, endsAt, capacity: Number(capacity),
-//       campus, location, status, createdBy
-//     });
-//     return res.status(201).json(doc);
-//   } catch (e: any) {
-//     console.error('createEvent', e);
-//     return bad(res, e?.message ?? 'internal', 500);
-//   }
-// }
-
-export async function listEvents(req: Request, res: Response) {
+export const listEvents = async (req: Request, res: Response) => {
   try {
     const upcoming = `${req.query.upcoming ?? ''}`.toLowerCase() === 'true';
     const filter: any = { status: 'published' };
     if (upcoming) filter.startsAt = { $gte: new Date() };
-    const events = await Event.find(filter).sort({ startsAt: 1 }).limit(200).lean();
-    return res.json(events);
-  } catch (e: any) {
-    console.error('listEvents', e);
-    return bad(res, 'internal', 500);
-  }
-}
 
-export async function getEvent(req: Request, res: Response) {
+    const events = await Event.find(filter).sort({ startsAt: 1 }).limit(200).lean();
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('listEvents', error);
+    bad(res, 'internal server error', 500);
+  }
+};
+
+export const getEvent = async (req: Request, res: Response) => {
   try {
     const doc = await Event.findById(req.params.id).lean();
     if (!doc) return bad(res, 'not found', 404);
-    return res.json(doc);
-  } catch {
-    return bad(res, 'invalid id');
+    res.status(200).json(doc);
+  } catch (error) {
+    console.error('getEvent', error);
+    bad(res, 'invalid id', 400);
   }
-}
+};
 
-export async function updateEvent(req: Request, res: Response) {
+
+export const updateEvent = async (req: Request, res: Response) => {
   try {
-    if (!isAdmin(req)) return bad(res, 'permission denied', 403);
-
-    const allowed = ['title','shortDescription','date','startTime','endTime','capacity','campus','location','status'] as const;
+    const allowed = ['title', 'shortDescription', 'date', 'startTime', 'endTime', 'capacity', 'campus', 'location', 'status'] as const;
     const update: any = {};
     for (const k of allowed) if (k in req.body) update[k] = req.body[k];
 
@@ -104,35 +72,36 @@ export async function updateEvent(req: Request, res: Response) {
       if (!current) return bad(res, 'not found', 404);
       const date = update.date ?? current.date;
       const startTime = update.startTime ?? current.startTime;
-      const endTime   = update.endTime ?? current.endTime;
+      const endTime = update.endTime ?? current.endTime;
       const startsAt = toDate(date, startTime);
-      const endsAt   = toDate(date, endTime);
+      const endsAt = toDate(date, endTime);
       if (startsAt.getTime() <= Date.now()) return bad(res, 'event must be in the future');
       if (endsAt <= startsAt) return bad(res, 'endTime must be after startTime');
-      update.startsAt = startsAt; update.endsAt = endsAt;
+      update.startsAt = startsAt;
+      update.endsAt = endsAt;
     }
 
     const doc = await Event.findByIdAndUpdate(req.params.id, update, { new: true });
     if (!doc) return bad(res, 'not found', 404);
-    return res.json(doc);
-  } catch (e: any) {
-    console.error('updateEvent', e);
-    return bad(res, 'internal', 500);
+    res.status(200).json(doc);
+  } catch (error) {
+    console.error('updateEvent', error);
+    bad(res, 'internal server error', 500);
   }
-}
+};
 
-export async function cancelEvent(req: Request, res: Response) {
+export const cancelEvent = async (req: Request, res: Response) => {
   try {
-    if (!isAdmin(req)) return bad(res, 'permission denied', 403);
     const doc = await Event.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
     if (!doc) return bad(res, 'not found', 404);
-    return res.json(doc);
-  } catch {
-    return bad(res, 'invalid id');
+    res.status(200).json(doc);
+  } catch (error) {
+    console.error('cancelEvent', error);
+    bad(res, 'invalid id', 400);
   }
-}
+};
 
-export async function joinEvent(req: Request, res: Response) {
+export const joinEvent = async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return bad(res, 'x-user-id header required');
 
@@ -157,19 +126,20 @@ export async function joinEvent(req: Request, res: Response) {
         { $inc: { attendeesCount: 1 } }
       ).session(session);
 
-      if (r.modifiedCount === 0) throw new Error('full'); // race
+      if (r.modifiedCount === 0) throw new Error('full'); // race condition
       payload = { joined: true, already: false };
     });
-    return res.status(201).json(payload);
-  } catch (e: any) {
+    res.status(201).json(payload);
+  } catch (error) {
+    console.error('joinEvent', error);
     const map: Record<string, number> = { 'not-found': 404, 'not-open': 400, 'started': 400, 'full': 409 };
-    return bad(res, e?.message ?? 'internal', map[e?.message] ?? 500);
+    bad(res, error?.message ?? 'internal server error', map[error?.message] ?? 500);
   } finally {
     session.endSession();
   }
-}
+};
 
-export async function leaveEvent(req: Request, res: Response) {
+export const leaveEvent = async (req: Request, res: Response) => {
   const uid = userId(req);
   if (!uid) return bad(res, 'x-user-id header required');
 
@@ -186,10 +156,11 @@ export async function leaveEvent(req: Request, res: Response) {
         await Event.updateOne({ _id: ev._id, attendeesCount: { $gt: 0 } }, { $inc: { attendeesCount: -1 } }).session(session);
       }
     });
-    return res.json({ left });
-  } catch (e: any) {
-    return bad(res, e?.message === 'not-found' ? 'not found' : 'internal', e?.message === 'not-found' ? 404 : 500);
+    res.status(200).json({ left });
+  } catch (error) {
+    console.error('leaveEvent', error);
+    bad(res, error?.message === 'not-found' ? 'not found' : 'internal server error', error?.message === 'not-found' ? 404 : 500);
   } finally {
     session.endSession();
   }
-}
+};
