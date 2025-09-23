@@ -8,6 +8,6 @@ import { registerToken, unregisterToken } from '../controllers/notificationContr
 const router = express.Router();
 
 router.post('/register-token', validate(TokenRegisterSchema), registerToken);
-router.post('/deactivate-token', validate(TokenRegisterSchema), unregisterToken);
+router.post('/deactivate-token', unregisterToken);
 
 export default router;
