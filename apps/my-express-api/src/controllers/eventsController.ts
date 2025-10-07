@@ -1,22 +1,24 @@
 import { Request, Response } from 'express';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import Event from '../models/eventsModel';
 import Registration from '../models/registrationModel';
+import User from '../models/usersModel';
+import Application from '../models/applicationsModel';
 
-const userId  = (req: Request) => (req.header('x-user-id') || '').trim();
+const userId = (req: Request) => (req.header('x-user-id') || '').trim();
 
 const toDate = (date: string, time: string) => new Date(`${date}T${time}`);
 const bad = (res: Response, msg: string, code = 400) => res.status(code).json({ error: msg });
 
 export const createEvent = async (req: Request, res: Response) => {
-	try {
-		const {
+  try {
+    const {
       title, shortDescription, date, startTime, endTime,
       capacity, campus, location, status = 'published', createdBy
     } = req.body ?? {};
     const startsAt = toDate(date, startTime);
     const endsAt   = toDate(date, endTime);
-  
+
     if (isNaN(startsAt.getTime()) || isNaN(endsAt.getTime())) return bad(res, 'invalid date/time');
     if (startsAt.getTime() <= Date.now()) return bad(res, 'event must be in the future');
     if (endsAt <= startsAt) return bad(res, 'endTime must be after startTime');
@@ -27,10 +29,11 @@ export const createEvent = async (req: Request, res: Response) => {
       campus, location, status, createdBy
     });
 
-		res.status(201).json({ success: true, message: 'created', data: doc });
-	} catch (error) {
-		console.log(error);
-	}
+    res.status(201).json({ success: true, message: 'created', data: doc });
+  } catch (error) {
+    console.log(error);
+    bad(res, 'internal server error', 500);
+  }
 };
 
 export const listEvents = async (req: Request, res: Response) => {
@@ -57,7 +60,6 @@ export const getEvent = async (req: Request, res: Response) => {
     bad(res, 'invalid id', 400);
   }
 };
-
 
 export const updateEvent = async (req: Request, res: Response) => {
   try {
@@ -130,7 +132,7 @@ export const joinEvent = async (req: Request, res: Response) => {
       payload = { joined: true, already: false };
     });
     res.status(201).json(payload);
-  } catch (error) {
+  } catch (error: any) {
     console.error('joinEvent', error);
     const map: Record<string, number> = { 'not-found': 404, 'not-open': 400, 'started': 400, 'full': 409 };
     bad(res, error?.message ?? 'internal server error', map[error?.message] ?? 500);
@@ -153,14 +155,128 @@ export const leaveEvent = async (req: Request, res: Response) => {
       const del = await Registration.deleteOne({ event: ev._id, userId: uid }).session(session);
       left = del.deletedCount > 0;
       if (left) {
-        await Event.updateOne({ _id: ev._id, attendeesCount: { $gt: 0 } }, { $inc: { attendeesCount: -1 } }).session(session);
+        await Event.updateOne(
+          { _id: ev._id, attendeesCount: { $gt: 0 } },
+          { $inc: { attendeesCount: -1 } }
+        ).session(session);
       }
     });
     res.status(200).json({ left });
-  } catch (error) {
+  } catch (error: any) {
     console.error('leaveEvent', error);
     bad(res, error?.message === 'not-found' ? 'not found' : 'internal server error', error?.message === 'not-found' ? 404 : 500);
   } finally {
     session.endSession();
+  }
+};
+
+/**
+ * Admin-only: list mentors registered to an event
+ * Prefers Applications (studentNumber/currentTerm/phone/email/name).
+ * Falls back to Users and includes studentId/currentTerm/phoneNumber if present on the user.
+ */
+export const getEventMentors = async (req: Request, res: Response) => {
+  try {
+    const eventId = req.params.id;
+
+    // 1) registrations for the event
+    const regs = await Registration.find({ event: eventId })
+      .select('userId')
+      .lean();
+
+    if (!regs.length) {
+      return res.status(200).json({ success: true, message: 'Event mentors', count: 0, data: [] });
+    }
+
+    // 2) normalize to strings and validate as ObjectId strings
+    const uniqueStr: string[] = Array.from(
+      new Set<string>(regs.map(r => (r.userId ?? '').toString()))
+    );
+
+    const validIdStrs: string[] = uniqueStr.filter((s) => typeof s === 'string' && Types.ObjectId.isValid(s));
+    if (!validIdStrs.length) {
+      return res.status(200).json({ success: true, message: 'Event mentors', count: 0, data: [] });
+    }
+
+    const userObjectIds: Types.ObjectId[] = validIdStrs.map((s) => new Types.ObjectId(s));
+
+    // 3) preferred profile source: Applications
+    const apps = await Application.find(
+      { userId: { $in: userObjectIds } },
+      { userId: 1, studentName: 1, studentNumber: 1, currentTerm: 1, phoneNumber: 1, emailAddress: 1 }
+    ).lean();
+
+    const appMap = new Map<string, {
+      name?: string;
+      studentId?: string;
+      currentTerm?: string;
+      phoneNumber?: string;
+      email?: string;
+    }>();
+
+    for (const a of apps) {
+      appMap.set(String(a.userId), {
+        name: a.studentName,
+        studentId: a.studentNumber,
+        currentTerm: a.currentTerm,
+        phoneNumber: a.phoneNumber,
+        email: a.emailAddress
+      });
+    }
+
+    // 4) fallback for users without application — include extra fields if your User model has them
+    const missingIdStrs = validIdStrs.filter((idStr) => !appMap.has(idStr));
+
+    let userFallback: Record<string, {
+      name?: string;
+      email?: string;
+      studentId?: string;
+      currentTerm?: string;
+      phoneNumber?: string;
+    }> = {};
+
+    if (missingIdStrs.length) {
+      const missingOids = missingIdStrs.map((s) => new Types.ObjectId(s));
+      const users = await User.find(
+        { _id: { $in: missingOids } },
+        { name: 1, email: 1, studentId: 1, currentTerm: 1, phoneNumber: 1 }
+      ).lean();
+
+      userFallback = users.reduce<typeof userFallback>((acc, u) => {
+        acc[String(u._id)] = {
+          name: (u as any).name ?? '',
+          email: (u as any).email ?? '',
+          studentId: (u as any).studentId,
+          currentTerm: (u as any).currentTerm,
+          phoneNumber: (u as any).phoneNumber,
+        };
+        return acc;
+      }, {});
+    }
+
+    // 5) compose output in the same order as the validated string ids
+    const data = validIdStrs.map((idStr) => {
+      const fromApp = appMap.get(idStr);
+      if (fromApp) return fromApp;
+
+      const fb = userFallback[idStr] ?? {};
+      return {
+        name: fb.name ?? '',
+        studentId: fb.studentId,
+        currentTerm: fb.currentTerm,
+        phoneNumber: fb.phoneNumber,
+        email: fb.email ?? '',
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Event mentors',
+      count: data.length,
+      data
+    });
+  } catch (error) {
+    console.error('getEventMentors', error);
+    return bad(res, 'internal server error', 500);
   }
 };

@@ -2,6 +2,7 @@
  * Events router integration test (replica-set DB for Mongoose transactions)
  * - Spins up MongoMemoryReplSet so sessions/transactions work
  * - Mocks admin/mentor guards (no JWTs)
+ * - Mocks Application model to prevent heavy validation/hooks during User.create
  * - Robustly extracts IDs and list shapes
  */
 jest.setTimeout(60000);
@@ -34,8 +35,27 @@ jest.mock('../../middlewares/mentorGuard', () => {
   return { mentorGuard };
 });
 
+/**
+ * Mock the Application model BEFORE importing router.
+ * Provide a query-like object (supports .lean()).
+ */
+const mockAppFind = jest.fn().mockReturnValue({
+  lean: () => Promise.resolve([]),
+});
+const mockAppCreate = jest.fn().mockResolvedValue(null);
+
+jest.mock('../../models/applicationsModel', () => ({
+  __esModule: true,
+  default: {
+    find: (...args: any[]) => mockAppFind(...args),
+    create: (...args: any[]) => mockAppCreate(...args),
+  },
+}));
+
 // Import the real router AFTER mocks
 import eventRouter from '../../routers/eventRouter';
+// Seed mentors for the mentors endpoint test
+import User from '../../models/usersModel';
 
 // --- Replica-set Mongo for transactions
 let replset: MongoMemoryReplSet;
@@ -63,26 +83,6 @@ function futureDate(days = 7): string {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString().slice(0, 10);
-}
-
-function extractIdLoose(body: any): string | undefined {
-  const candidates = [
-    body?._id,
-    body?.id,
-    body?.data?._id,
-    body?.data?.id,
-    body?.data?.event?._id,
-    body?.event?._id,
-    body?.result?._id,
-    body?.data?.result?._id,
-  ].filter(Boolean);
-  const first = candidates.find((v: unknown) => typeof v === 'string' && (v as string).length === 24);
-  if (first) return first as string;
-
-  // Fallback: find any 24-hex id string in payload
-  const asString = JSON.stringify(body);
-  const m = asString.match(/"([a-fA-F0-9]{24})"/);
-  return m?.[1];
 }
 
 type EventDto = {
@@ -128,7 +128,6 @@ describe('Events Router (with mocked guards + shared DB setup)', () => {
         date,
         startTime: '17:00',
         endTime: '18:30',
-        // name variability; validators ignore extras
         capacity: 2,
         mentorsRequired: 2,
         numberOfMentorsRequired: 2,
@@ -138,10 +137,9 @@ describe('Events Router (with mocked guards + shared DB setup)', () => {
 
     expect([200, 201]).toContain(res.status);
 
-    id = extractIdLoose(res.body) ?? '';
-
+    // Strict: your createEvent returns { success, message, data: doc }
+    id = res.body?.data?._id ?? '';
     if (!id) {
-      // fallback: fetch list and match by title
       const list = await request(app).get('/api/events?upcoming=true').set('x-user-id', U1);
       expect(list.status).toBe(200);
       const arr = getEventsArray(list.body);
@@ -180,7 +178,10 @@ describe('Events Router (with mocked guards + shared DB setup)', () => {
   });
 
   it('update and cancel (admin), then joining fails', async () => {
-    const upd = await request(app).patch(`/api/events/${id}`).set('Content-Type', 'application/json').send({ endTime: '19:00' });
+    const upd = await request(app)
+      .patch(`/api/events/${id}`)
+      .set('Content-Type', 'application/json')
+      .send({ endTime: '19:00' });
     expect(upd.status).toBe(200);
 
     const cancel = await request(app).post(`/api/events/${id}/cancel`);
@@ -188,5 +189,107 @@ describe('Events Router (with mocked guards + shared DB setup)', () => {
 
     const again = await request(app).post(`/api/events/${id}/join`).set('x-user-id', U1);
     expect([400, 409]).toContain(again.status);
+  });
+
+  // Mentors listing
+  it('returns mentors info for an event', async () => {
+    // fresh published event
+    const create = await request(app)
+      .post('/api/events')
+      .set('Content-Type', 'application/json')
+      .send({
+        title: 'Mentor Info Event',
+        shortDescription: 'For mentors endpoint test',
+        date,
+        startTime: '10:00',
+        endTime: '11:00',
+        capacity: 10,
+        campus: 'Trafalgar',
+        location: 'Room A101',
+      });
+    expect([200, 201]).toContain(create.status);
+
+    const eventId = create.body?.data?._id as string;
+    expect(typeof eventId).toBe('string');
+    expect(eventId).toHaveLength(24);
+
+    // seed 2 mentor users
+    const M1 = '444444444444444444444444';
+    const M2 = '555555555555555555555555';
+
+    await User.create([
+      {
+        _id: new mongoose.Types.ObjectId(M1),
+        name: 'Alice Mentor',
+        studentId: 'S10001',
+        currentTerm: 'Fall 2024',
+        phoneNumber: '111-111-1111',
+        email: 'alice@example.com',
+        password: 'x',
+        role: 'mentor',
+      },
+      {
+        _id: new mongoose.Types.ObjectId(M2),
+        name: 'Bob Mentor',
+        studentId: 'S10002',
+        currentTerm: 'Fall 2024',
+        phoneNumber: '222-222-2222',
+        email: 'bob@example.com',
+        password: 'x',
+        role: 'mentor',
+      },
+    ]);
+
+    // join both mentors
+    const j1 = await request(app).post(`/api/events/${eventId}/join`).set('x-user-id', M1);
+    expect([200, 201]).toContain(j1.status);
+
+    const j2 = await request(app).post(`/api/events/${eventId}/join`).set('x-user-id', M2);
+    expect([200, 201]).toContain(j2.status);
+
+    // >>>>>>> inject Application docs so controller can enrich profile fields
+    mockAppFind.mockReturnValueOnce({
+      lean: () =>
+        Promise.resolve([
+          {
+            userId: new mongoose.Types.ObjectId(M1),
+            studentName: 'Alice Mentor',
+            studentNumber: 'S10001',
+            currentTerm: 'Fall 2024',
+            phoneNumber: '111-111-1111',
+            emailAddress: 'alice@example.com',
+          },
+          {
+            userId: new mongoose.Types.ObjectId(M2),
+            studentName: 'Bob Mentor',
+            studentNumber: 'S10002',
+            currentTerm: 'Fall 2024',
+            phoneNumber: '222-222-2222',
+            emailAddress: 'bob@example.com',
+          },
+        ]),
+    });
+    // <<<<<<<
+
+    // fetch mentors list (admin-only; mocked)
+    const res = await request(app).get(`/api/events/${eventId}/mentors`);
+    expect(res.status).toBe(200);
+
+    expect(res.body).toHaveProperty('success', true);
+    expect(res.body).toHaveProperty('message', 'Event mentors');
+    expect(Array.isArray(res.body.data)).toBe(true);
+    expect(res.body.count).toBe(2);
+
+    const emails = res.body.data.map((m: any) => m.email).sort();
+    expect(emails).toEqual(['alice@example.com', 'bob@example.com'].sort());
+
+    for (const m of res.body.data) {
+      expect(m).toHaveProperty('name');
+      expect(m).toHaveProperty('studentId');
+      expect(m).toHaveProperty('currentTerm');
+      expect(m).toHaveProperty('phoneNumber');
+      expect(m).toHaveProperty('email');
+      expect(m).not.toHaveProperty('password');
+    }
   });
 });
