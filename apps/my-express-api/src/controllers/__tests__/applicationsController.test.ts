@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import { getApplications, singleApplication, createApplication, updateApplication } from '../applicationsController';
 import Application from '../../models/applicationsModel';
+
 import { AuthRequest } from '../authController';
 import { sendPushNotification } from '../notificationController';
+import User from '../../models/usersModel';
 
 jest.mock('../../models/applicationsModel');
+jest.mock('../../models/usersModel');
 jest.mock('../notificationController', () => ({
   sendPushNotification: jest.fn()
 }));
@@ -137,79 +140,88 @@ describe('Applications Controller', () => {
   });
 
   describe('updateApplication', () => {
-    it('should update application status successfully', async () => {
-      const mockExistingApplication = {
+  it('should update application status and user role successfully', async () => {
+    const mockExistingApplication = {
+      _id: 'test-id',
+      status: 'pending',
+      userId: 'user-id',
+      save: jest.fn().mockResolvedValue({
         _id: 'test-id',
-        status: 'pending',
-        userId: 'user-id',
-        save: jest.fn().mockResolvedValue({
-          _id: 'test-id',
-          status: 'accepted'
-        })
-      };
-  
-      mockRequest.params = { _id: 'test-id' };
-      mockRequest.body = { status: 'accepted' };
-      
-      (Application.findOne as jest.Mock).mockResolvedValue(mockExistingApplication);
-      (sendPushNotification as jest.Mock).mockResolvedValue(undefined);
+        status: 'accepted'
+      })
+    };
 
-      await updateApplication(mockRequest as Request, mockResponse as Response);
-  
-      expect(Application.findOne).toHaveBeenCalledWith({ _id: 'test-id' });
-      expect(mockExistingApplication.status).toBe('accepted');
-      expect(mockExistingApplication.save).toHaveBeenCalled();
-      expect(sendPushNotification).toHaveBeenCalledWith(
-        'Application Status Updated',
-        'Your application status has been updated to: accepted',
-        {},
-        'user-id'
-      );
-      expect(mockResponse.status).toHaveBeenCalledWith(200);
-      expect(mockResponse.json).toHaveBeenCalledWith({
-        success: true,
-        message: 'Application updated successfully',
-        data: expect.objectContaining({
-          _id: 'test-id',
-          status: 'accepted'
-        })
-      });
-    });
-  
-    it('should return 404 when application not found', async () => {
-      mockRequest.params = { _id: 'non-existent-id' };
-      mockRequest.body = { status: 'accepted' };
-      
-      (Application.findOne as jest.Mock).mockResolvedValue(null);
-  
-      await updateApplication(mockRequest as Request, mockResponse as Response);
-  
-      expect(mockResponse.status).toHaveBeenCalledWith(404);
-      expect(mockResponse.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Application not found'
-      });
-    });
-  
-    it('should handle errors during update', async () => {
-      const mockError = new Error('Database error');
-      mockRequest.params = { _id: 'test-id' };
-      mockRequest.body = { status: 'accepted' };
-      
-      (Application.findOne as jest.Mock).mockResolvedValue({
+    const mockUser = {
+      _id: 'user-id',
+      role: 'user',
+      save: jest.fn().mockResolvedValue(undefined)
+    };
+
+    mockRequest.params = { _id: 'test-id' };
+    mockRequest.body = { status: 'accepted' };
+
+    (Application.findOne as jest.Mock).mockResolvedValue(mockExistingApplication);
+    (User.findOne as jest.Mock).mockResolvedValue(mockUser);
+    (sendPushNotification as jest.Mock).mockResolvedValue(undefined);
+
+    await updateApplication(mockRequest as Request, mockResponse as Response);
+
+    expect(Application.findOne).toHaveBeenCalledWith({ _id: 'test-id' });
+    expect(mockExistingApplication.status).toBe('accepted');
+    expect(mockUser.role).toBe('mentor'); // Check if user role is updated
+    expect(mockExistingApplication.save).toHaveBeenCalled();
+    expect(mockUser.save).toHaveBeenCalled(); // Ensure user save is called
+    expect(sendPushNotification).toHaveBeenCalledWith(
+      'Application Status Updated',
+      'Your application status has been updated to: accepted',
+      {},
+      'user-id'
+    );
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      success: true,
+      message: 'Application updated successfully',
+      data: expect.objectContaining({
         _id: 'test-id',
-        status: 'pending',
-        save: jest.fn().mockRejectedValue(mockError)
-      });
-  
-      await updateApplication(mockRequest as Request, mockResponse as Response);
-  
-      expect(mockResponse.status).toHaveBeenCalledWith(500);
-      expect(mockResponse.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Error updating application',
-        error: 'Database error'
-      });
+        status: 'accepted'
+      })
     });
   });
+
+  it('should return 404 when application not found', async () => {
+    mockRequest.params = { _id: 'non-existent-id' };
+    mockRequest.body = { status: 'accepted' };
+
+    (Application.findOne as jest.Mock).mockResolvedValue(null);
+
+    await updateApplication(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(404);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'Application not found'
+    });
+  });
+
+  it('should handle errors during update', async () => {
+    const mockError = new Error('Database error');
+    mockRequest.params = { _id: 'test-id' };
+    mockRequest.body = { status: 'accepted' };
+
+    (Application.findOne as jest.Mock).mockResolvedValue({
+      _id: 'test-id',
+      status: 'pending',
+      save: jest.fn().mockRejectedValue(mockError)
+    });
+
+    await updateApplication(mockRequest as Request, mockResponse as Response);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(500);
+    expect(mockResponse.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'Error updating application',
+      error: 'Database error'
+    });
+  });
+});
 });
