@@ -9,3 +9,14 @@ export type CreateEventDto = {
   location: string,
   status: 'published' | 'cancelled';
 }
+
+export type EventRo = CreateEventDto & {
+  _id: string,
+  attendeesCount: number,
+  createdAt: string,
+  updatedAt: string,
+}
+
+export type GetEventDto = {
+  upcoming?: boolean,
+}
