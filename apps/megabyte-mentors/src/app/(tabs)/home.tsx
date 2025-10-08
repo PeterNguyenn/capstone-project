@@ -7,19 +7,62 @@ import ApplicationItem from '../../components/ApplicationItem'
 // import { ApplicationRo } from '../../api/services/application.service'
 import { useApplications } from '../../api/individual-queries/appointments/queries'
 import { useGlobalContext } from '../../context/GlobalProvider'
+import { useEvents } from '../../api/individual-queries/event/queries'
+import EventItem from '../../components/EventItem'
 
 const Home = () => {
-    const { user } = useGlobalContext();
+  const { user } = useGlobalContext();
   
   const { data: applications } = useApplications(
    user?.role !== 'admin' && user?._id ? {
       userId: user._id,
     } : {}
   )
+
+  const { data: events } = useEvents({ upcoming: true}, user?.role === 'mentor');
+  
   
   return (
     <SafeAreaView className='bg-primary h-full'>
-      <FlatList
+      {user?.role === 'mentor' ? (
+        <FlatList
+          data={events?.data}
+          keyExtractor={(item) => item._id.toString()}
+          renderItem={({item}) => (
+            <EventItem
+              _id={item._id}
+              title={item.title}
+              date={item.date}
+              campus={item.campus}
+              capacity={item.capacity}
+              attendeesCount={item.attendeesCount}
+            />
+          )}
+          ListHeaderComponent={() => (
+            <View className='my-6 px-4 space-y-6'>
+              <View className='justify-between items-start flex-row mb-6'>
+              <View>
+                <Text className='font-pmedium text-sm text-gray-100' testID='welcome'>Welcome Back!</Text>
+                <Text className='text-2xl font-psemibold text-white'>{user?.name}</Text>
+              </View>
+              <View className='mt-1.5'>
+                <Image source={images.logoSmall} className='w-9 h-10' resizeMode='contain' />
+              </View>
+            </View>
+              <View className='w-full flex-1 pt-5'>
+                <Text className='text-gray-100 text-lg font-pregular mb-3'>Upcoming Events</Text>
+              </View>
+            </View>
+          )}
+          ListEmptyComponent={() => (
+            <EmptyState
+              title='No Events Found'
+              subtitle='There are currently no events available'
+            />
+          )}
+        />
+      ) : (
+        <FlatList
         data={applications?.data}
         keyExtractor={(item) => item._id.toString()}
         renderItem={({item}) => (
@@ -56,6 +99,7 @@ const Home = () => {
           />
         )}
       />
+      )}
     </SafeAreaView>
   )
 }

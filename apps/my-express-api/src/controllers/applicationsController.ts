@@ -2,6 +2,7 @@ import Application from "../models/applicationsModel";
 import { Request, Response } from "express";
 import { AuthRequest } from "./authController";
 import { sendPushNotification } from "./notificationController";
+import User from "../models/usersModel";
 
 export const getApplications = async (req: Request, res: Response) => {
 	const { page , userId } = req.query;
@@ -80,6 +81,8 @@ export const updateApplication = async (req: Request, res: Response) => {
     try {
         // Find the application by ID
         const existingApplication = await Application.findOne({ _id });
+				const userId = existingApplication?.userId;
+				const user = await User.findOne({ _id: userId });
 
         if (!existingApplication) {
             return res.status(404).json({ success: false, message: 'Application not found' });
@@ -87,6 +90,11 @@ export const updateApplication = async (req: Request, res: Response) => {
 
         // Update the application status and admin comments
         existingApplication.status = status;
+				if (status === 'accepted' && user.role !== 'mentor') {
+					user.role = 'mentor';
+				} else if (status === 'rejected' && user.role === 'mentor') {
+					user.role = 'user';
+				}	
         //existingApplication.adminComments = adminComments;
         //existingApplication.reviewedAt = new Date();
 				await sendPushNotification(
@@ -99,6 +107,7 @@ export const updateApplication = async (req: Request, res: Response) => {
 				});
         // Save the updated application
         await existingApplication.save();
+				await user.save();
 
         res.status(200).json({ success: true, message: 'Application updated successfully', data: existingApplication });
     } catch (error) {

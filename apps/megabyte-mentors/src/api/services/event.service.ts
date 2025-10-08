@@ -1,12 +1,12 @@
 import apiClient from "../axios-config";
-import { CreateEventDto } from "../individual-queries/event/types";
+import { CreateEventDto, EventRo } from "../individual-queries/event/types";
 import { ApiResponse } from "../types";
 
 
 
 const eventService = {
-  createEvent: async (data: CreateEventDto): Promise<ApiResponse<CreateEventDto>> => {
-    const response = await apiClient.post<ApiResponse<CreateEventDto>>(
+  createEvent: async (data: CreateEventDto): Promise<ApiResponse<EventRo>> => {
+    const response = await apiClient.post<ApiResponse<EventRo>>(
       '/api/events', 
       data
     );

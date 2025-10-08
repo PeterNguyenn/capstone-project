@@ -4,6 +4,7 @@ import Event from '../models/eventsModel';
 import Registration from '../models/registrationModel';
 import User from '../models/usersModel';
 import Application from '../models/applicationsModel';
+import { sendPushNotification } from './notificationController';
 
 const userId = (req: Request) => (req.header('x-user-id') || '').trim();
 
@@ -36,14 +37,79 @@ export const createEvent = async (req: Request, res: Response) => {
   }
 };
 
-export const listEvents = async (req: Request, res: Response) => {
+export const createEventReminder = async (req: Request, res: Response) => {
   try {
-    const upcoming = `${req.query.upcoming ?? ''}`.toLowerCase() === 'true';
-    const filter: any = { status: 'published' };
-    if (upcoming) filter.startsAt = { $gte: new Date() };
+    const {
+      title, message
+    } = req.body ?? {};
 
-    const events = await Event.find(filter).sort({ startsAt: 1 }).limit(200).lean();
-    res.status(200).json(events);
+    if (!title) return bad(res, 'title is required');
+    if (!message) return bad(res, 'message is required');
+
+    const eventId = req.params._id;
+
+    // 1) registrations for the event
+    const regs = await Registration.find({ event: eventId })
+      .select('userId')
+      .lean();
+
+    if (!regs.length) {
+      return res.status(200).json({ success: true, message: 'Event mentors', count: 0, data: [] });
+    }
+
+    // 2) normalize to strings and validate as ObjectId strings
+    const uniqueStr: string[] = Array.from(
+      new Set<string>(regs.map(r => (r.userId ?? '').toString()))
+    );
+
+    const validIdStrs: string[] = uniqueStr.filter((s) => typeof s === 'string' && Types.ObjectId.isValid(s));
+    if (!validIdStrs.length) {
+      return res.status(200).json({ success: true, message: 'Event mentors', count: 0, data: [] });
+    }
+
+    const userObjectIds: Types.ObjectId[] = validIdStrs.map((s) => new Types.ObjectId(s));
+    for (const uId of userObjectIds) {
+      sendPushNotification(title, message, {}, uId);
+    }
+    res.status(201).json({ success: true, message: 'created', data: { notified: userObjectIds.length } });
+  } catch (error) {
+    console.log(error);
+    bad(res, 'internal server error', 500);
+  }
+};
+
+type FilterType = {
+  status?: 'published' | 'cancelled';
+  startsAt?: { $gte: Date };
+}
+
+export const listEvents = async (req: Request, res: Response) => {
+  const { page , upcoming } = req.query;
+  const itemsPerPage = 10;
+
+  const isUpcoming = `${upcoming ?? ''}`.toLowerCase() === 'true';
+  try {
+    let pageNum = 0;
+    if (typeof page === 'string') {
+      const parsedPage = parseInt(page, 10);
+      if (parsedPage <= 1) {
+        pageNum = 0;
+      } else {
+        pageNum = parsedPage - 1;
+      }
+    }
+
+    // Create a filter object that will be used in the find query
+    const filter: FilterType = { status: 'published' };
+    if (isUpcoming) filter.startsAt = { $gte: new Date() };
+
+    const result = await Event.find(filter)
+      .sort({ startsAt: 1 })
+      .skip(pageNum * itemsPerPage)
+      .limit(itemsPerPage)
+      .lean();
+
+    res.status(200).json({ success: true, page: page, limit: itemsPerPage,  message: 'applications', data: result });
   } catch (error) {
     console.error('listEvents', error);
     bad(res, 'internal server error', 500);
@@ -52,7 +118,7 @@ export const listEvents = async (req: Request, res: Response) => {
 
 export const getEvent = async (req: Request, res: Response) => {
   try {
-    const doc = await Event.findById(req.params.id).lean();
+    const doc = await Event.findById(req.params._id).lean();
     if (!doc) return bad(res, 'not found', 404);
     res.status(200).json(doc);
   } catch (error) {
@@ -70,7 +136,7 @@ export const updateEvent = async (req: Request, res: Response) => {
     if (update.capacity !== undefined && Number(update.capacity) < 1) return bad(res, 'capacity must be > 0');
 
     if (update.date || update.startTime || update.endTime) {
-      const current = await Event.findById(req.params.id).lean();
+      const current = await Event.findById(req.params._id).lean();
       if (!current) return bad(res, 'not found', 404);
       const date = update.date ?? current.date;
       const startTime = update.startTime ?? current.startTime;
@@ -83,7 +149,7 @@ export const updateEvent = async (req: Request, res: Response) => {
       update.endsAt = endsAt;
     }
 
-    const doc = await Event.findByIdAndUpdate(req.params.id, update, { new: true });
+    const doc = await Event.findByIdAndUpdate(req.params._id, update, { new: true });
     if (!doc) return bad(res, 'not found', 404);
     res.status(200).json(doc);
   } catch (error) {
@@ -94,7 +160,7 @@ export const updateEvent = async (req: Request, res: Response) => {
 
 export const cancelEvent = async (req: Request, res: Response) => {
   try {
-    const doc = await Event.findByIdAndUpdate(req.params.id, { status: 'cancelled' }, { new: true });
+    const doc = await Event.findByIdAndUpdate(req.params._id, { status: 'cancelled' }, { new: true });
     if (!doc) return bad(res, 'not found', 404);
     res.status(200).json(doc);
   } catch (error) {
@@ -111,7 +177,7 @@ export const joinEvent = async (req: Request, res: Response) => {
   try {
     let payload: any = {};
     await session.withTransaction(async () => {
-      const ev = await Event.findById(req.params.id).session(session);
+      const ev = await Event.findById(req.params._id).session(session);
       if (!ev) throw new Error('not-found');
       if (ev.status !== 'published') throw new Error('not-open');
       if (ev.startsAt.getTime() <= Date.now()) throw new Error('started');
@@ -149,7 +215,7 @@ export const leaveEvent = async (req: Request, res: Response) => {
   try {
     let left = false;
     await session.withTransaction(async () => {
-      const ev = await Event.findById(req.params.id).session(session);
+      const ev = await Event.findById(req.params._id).session(session);
       if (!ev) throw new Error('not-found');
 
       const del = await Registration.deleteOne({ event: ev._id, userId: uid }).session(session);
@@ -177,7 +243,7 @@ export const leaveEvent = async (req: Request, res: Response) => {
  */
 export const getEventMentors = async (req: Request, res: Response) => {
   try {
-    const eventId = req.params.id;
+    const eventId = req.params._id;
 
     // 1) registrations for the event
     const regs = await Registration.find({ event: eventId })
