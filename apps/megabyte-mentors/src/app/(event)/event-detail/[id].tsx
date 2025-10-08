@@ -35,7 +35,6 @@ const EventDetail = () => {
 
   const { data: eventData, isPending: pending } = useEvent({ id });
   const { data: eventMentorData } = useEventMentors({ id }, user?.role === 'admin');
-  
   const event = eventData;
 
   const handleRegister = () => {
@@ -71,13 +70,13 @@ const EventDetail = () => {
           <CapacityChip capacity={event.capacity} attendeesCount={event.attendeesCount}/>
         </View>
 
-        {eventMentorData && eventMentorData.length > 0 && (
+        {eventMentorData && eventMentorData.data.length > 0 && (
           <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
             <Text className="text-xl text-white font-pbold mb-4">
               Event Participants
             </Text>
 
-            {eventMentorData.map((participant) => (
+            {eventMentorData.data.map((participant) => (
               <View key={participant.studentId}>
                 <View className="border-b-gray-100 border-2 mt-2 mb-4" />
                 <View className="flex-col items-start gap-1 mb-2 ml-2">

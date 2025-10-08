@@ -35,7 +35,7 @@ export const useEventMentors = ({
     id: string;
   },
   enabled = true,
-): UseQueryResult<EventMentorRo[]> => {
+): UseQueryResult<PaginatedResponse<EventMentorRo>> => {
   return useQuery({
     queryKey: eventMentorKeys.list({ id }),
     queryFn: ({ queryKey: [{ params }] }) => fetchEventMentors(params),

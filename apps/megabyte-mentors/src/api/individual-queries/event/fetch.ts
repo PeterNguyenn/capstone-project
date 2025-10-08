@@ -32,9 +32,8 @@ export const fetchEventMentors = async ({
   id,
 }: {
   id: string;
-}): Promise<EventMentorRo[]> => {
-  const { data } = await apiClient.get<EventMentorRo[]>(`/api/events/${id}/mentors`);
-
+}): Promise<PaginatedResponse<EventMentorRo>> => {
+  const { data } = await apiClient.get<PaginatedResponse<EventMentorRo>>(`/api/events/${id}/mentors`);
   return data;
 };
 
