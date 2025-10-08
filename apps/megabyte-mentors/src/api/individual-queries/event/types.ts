@@ -17,6 +17,24 @@ export type EventRo = CreateEventDto & {
   updatedAt: string,
 }
 
+export type EventReminderRo = {
+  notified: number,
+}
+
+export type CreateEventReminderDto = {
+  id: string,
+  title: string,
+  message: string,
+}
+
 export type GetEventDto = {
   upcoming?: boolean,
+}
+
+export type EventMentorRo = {
+  name: string,
+  studentId: string,
+  currentTerm: number,
+  phoneNumber: string,
+  email: string,
 }

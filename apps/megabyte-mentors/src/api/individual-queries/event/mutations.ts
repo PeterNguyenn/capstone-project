@@ -3,6 +3,8 @@ import { ApiResponse } from '../../types';
 import {
   EventRo,
   CreateEventDto,
+  CreateEventReminderDto,
+  EventReminderRo,
 } from './types';
 import { eventKeys } from './queryKeys';
 import eventService from '../../services/event.service';
@@ -27,11 +29,42 @@ export const useCreateEventMutation = ({
   });
 };
 
+const createEventReminder = async (data: CreateEventReminderDto): Promise<ApiResponse<EventReminderRo>> => {
+    const response = await apiClient.post<ApiResponse<EventReminderRo>>(
+      `/api/events/${data.id}/reminder`, 
+      data
+    );
+    return response.data;
+  };
+
+export const useCreateEventReminderMutation = ({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: (data: ApiResponse<EventReminderRo>) => void;
+  onError: (error: Error) => void;
+}) => {
+
+  return useMutation({
+    mutationFn: (params: CreateEventReminderDto) => createEventReminder(params),
+    onSuccess: async (data: ApiResponse<EventReminderRo>) => {
+      onSuccess(data);
+    },
+    onError,
+  });
+};
+
 export const joinEvent = async (
   id: string,
+  userId: string,
 ): Promise<EventRo> => {
+
   const { data } = await apiClient.post(
-    `/api/events/${id}/join`);
+    `/api/events/${id}/join`,{}, {
+  headers: {
+    'x-user-id': userId,
+  }
+});
   return data;
 };
 
@@ -47,9 +80,11 @@ export const useJoinEventMutation = ({
   return useMutation({
     mutationFn: ({
       id,
+      userId,
     }: {
       id: string;
-    }) => joinEvent(id),
+      userId: string;
+    }) => joinEvent(id, userId),
     onSuccess: async (data: EventRo) => {
       queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
       queryClient.invalidateQueries({ queryKey: eventKeys.details() });

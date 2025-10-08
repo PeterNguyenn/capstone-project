@@ -12,34 +12,19 @@ import CustomButton from '../../../components/CustomButton';
 import { router, useLocalSearchParams } from 'expo-router';
 import { icons } from '../../../constants';
 import { useJoinEventMutation } from '../../../api/individual-queries/event/mutations';
-import { useEvent } from '../../../api/individual-queries/event/queries';
+import { useEvent, useEventMentors } from '../../../api/individual-queries/event/queries';
 import { useGlobalContext } from '../../../context/GlobalProvider';
 import Loader from '../../../components/Loader';
 import CapacityChip from '../../../components/CapacityChip';
-
-const participants = [    
-      {  name: 'Thong Nguyen',
-        studentId: '12345678',
-        currentTerm: 5,
-        phoneNumber: '0912345678',
-        email: 'test@gmail.com',
-      },
-      {
-        name: 'John Doe',
-        studentId: '87654321',
-        currentTerm: 3,
-        phoneNumber: '0987654321',
-        email: 'test@gmail.com'
-      }
-]
 
 const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useGlobalContext();
 
-  const { mutate: updateAppointmentStatus, isPending } =
+  const { mutate: joinEvent, isPending } =
     useJoinEventMutation({
       onSuccess: () => {
+        Alert.alert('Success', 'Successfully registered for event');
         router.back();
       },
 
@@ -48,12 +33,15 @@ const EventDetail = () => {
       },
     });
 
-  const { data: eventData, isPending: pending } = useEvent({ id }); 
+  const { data: eventData, isPending: pending } = useEvent({ id });
+  const { data: eventMentorData } = useEventMentors({ id }, user?.role === 'admin');
+  
   const event = eventData;
 
   const handleRegister = () => {
-    updateAppointmentStatus({
+    joinEvent({
       id,
+      userId: user?._id || '',
     });
   };
 
@@ -82,13 +70,14 @@ const EventDetail = () => {
           </Text>
           <CapacityChip capacity={event.capacity} attendeesCount={event.attendeesCount}/>
         </View>
-        {participants.length > 0 && (
+
+        {eventMentorData && eventMentorData.length > 0 && (
           <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
             <Text className="text-xl text-white font-pbold mb-4">
               Event Participants
             </Text>
 
-            {participants.map((participant) => (
+            {eventMentorData.map((participant) => (
               <View key={participant.studentId}>
                 <View className="border-b-gray-100 border-2 mt-2 mb-4" />
                 <View className="flex-col items-start gap-1 mb-2 ml-2">
@@ -202,6 +191,14 @@ const EventDetail = () => {
           containerStyle="mt-7 flex-1"
           textStyle="text-white"
           isLoading={isPending}
+        />
+        )}
+        {user?.role === 'admin' && (
+        <CustomButton
+          title="Send Event Reminder"
+          handlePress={() => router.push(`/event-reminder/${id}`)}
+          containerStyle="mt-7 flex-1"
+          textStyle="text-white"
         />
         )}
       </ScrollView>

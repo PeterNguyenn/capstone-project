@@ -12,3 +12,11 @@ export const eventKeys = {
     params: GetEventDto,
   ) => [{ ...eventKeys.lists()[0], params }],
 } as const;
+
+export const eventMentorKeys = {
+  all: [{ scope: 'eventMentors' }],
+  lists: () => [{ ...eventMentorKeys.all[0], entity: 'list' }],
+  list: (params: { id: string }) => [
+    { ...eventMentorKeys.lists()[0], params },
+  ],
+} as const;
