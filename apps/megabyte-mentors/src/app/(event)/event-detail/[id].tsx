@@ -190,6 +190,7 @@ const EventDetail = () => {
           containerStyle="mt-7 flex-1"
           textStyle="text-white"
           isLoading={isPending}
+          testID='register-event'
         />
         )}
         {user?.role === 'admin' && (
