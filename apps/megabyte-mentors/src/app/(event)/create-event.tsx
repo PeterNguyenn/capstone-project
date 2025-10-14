@@ -69,7 +69,7 @@ const CreateEvent = () => {
               className="w-6 h-6"
             />
           </TouchableOpacity>
-          <Text className="text-2xl text-white font-psemibold" testID='event-title'>
+          <Text className="text-2xl text-white font-psemibold" testID='create-event-title'>
             Create Event
           </Text>
           <View className="w-6 h-6" />

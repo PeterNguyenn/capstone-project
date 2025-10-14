@@ -29,7 +29,7 @@ const Event = () => {
           <View className='my-6 px-4 space-y-6'>
             <View className='justify-between items-center flex-row mb-6'>
               <View>
-                <Text className='text-2xl font-psemibold text-white'>Events & Workshop</Text>
+                <Text testID='event-title' className='text-2xl font-psemibold text-white'>Events & Workshop</Text>
               </View>
               <View>
                 <CustomButton title='Create' handlePress={() => router.push(`/create-event`)} testID='create-event-button' containerStyle='min-h-[32px] px-4'/>
