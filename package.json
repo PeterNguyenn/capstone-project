@@ -45,7 +45,8 @@
     "supertest": "^7.0.0",
     "tslib": "^2.3.0",
     "zod": "^3.24.2",
-    "zod-validation-error": "^3.4.0"
+    "zod-validation-error": "^3.4.0",
+    "@react-native-community/datetimepicker": "8.4.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",

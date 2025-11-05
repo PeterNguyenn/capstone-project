@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../../components/CustomButton';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -20,6 +20,7 @@ import CapacityChip from '../../../components/CapacityChip';
 const EventDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useGlobalContext();
+  const [expandedParticipant, setExpandedParticipant] = useState<string | null>(null);
 
   const { mutate: joinEvent, isPending } =
     useJoinEventMutation({
@@ -34,8 +35,12 @@ const EventDetail = () => {
     });
 
   const { data: eventData, isPending: pending } = useEvent({ id });
-  const { data: eventMentorData } = useEventMentors({ id }, user?.role === 'admin');
+  const { data: eventMentorData } = useEventMentors({ id }, user?.role === 'admin' || user?.role === 'mentor');
   const event = eventData;
+
+  // Check if current user is registered
+  // For mentors, the API only returns their own registration, so if data has items, they're registered
+  const isUserRegistered = user?.role === 'mentor' && eventMentorData && eventMentorData.data.length > 0;
 
   const handleRegister = () => {
     joinEvent({
@@ -70,50 +75,6 @@ const EventDetail = () => {
           <CapacityChip capacity={event.capacity} attendeesCount={event.attendeesCount}/>
         </View>
 
-        {eventMentorData && eventMentorData.data.length > 0 && (
-          <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-            <Text className="text-xl text-white font-pbold mb-4">
-              Event Participants
-            </Text>
-
-            {eventMentorData.data.map((participant) => (
-              <View key={participant.studentId}>
-                <View className="border-b-gray-100 border-2 mt-2 mb-4" />
-                <View className="flex-col items-start gap-1 mb-2 ml-2">
-                  <Text className="text-white font-pbold">Name:</Text>
-                  <Text className="text-gray-100 font-psemibold">
-                    {participant.name}
-                  </Text>
-                </View>
-                <View className="flex-col items-start gap-1 mb-2 ml-2">
-                  <Text className="text-white font-pbold">Student Id:</Text>
-                  <Text className="text-gray-100 font-psemibold">
-                    {participant.studentId}
-                  </Text>
-                </View>
-                <View className="flex-col items-start gap-1 mb-2 ml-2">
-                  <Text className="text-white font-pbold">Current Term:</Text>
-                  <Text className="text-gray-100 font-psemibold">
-                    {participant.currentTerm}
-                  </Text>
-                </View>
-                <View className="flex-col items-start gap-1 mb-2 ml-2">
-                  <Text className="text-white font-pbold">Phone Number:</Text>
-                  <Text className="text-gray-100 font-psemibold">
-                    {participant.phoneNumber}
-                  </Text>
-                </View>
-                <View className="flex-col items-start gap-1 mb-2 ml-2">
-                  <Text className="text-white font-pbold">Email Adress:</Text>
-                  <Text className="text-gray-100 font-psemibold">
-                    {participant.email}
-                  </Text>
-                </View>
-              </View>
-            ))}
-
-          </View>
-        )}
         <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
           <Text className="text-xl font-psemibold text-white mb-4">
             Event Information
@@ -183,7 +144,67 @@ const EventDetail = () => {
             </Text>
           </View>
         </View>
-      {user?.role === 'mentor' && (
+
+        {user?.role === 'admin' && eventMentorData && eventMentorData.data.length > 0 && (
+          <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
+            <Text className="text-xl text-white font-pbold mb-4">
+              Event Participants ({eventMentorData.data.length})
+            </Text>
+
+            {eventMentorData.data.map((participant, index) => {
+              const isExpanded = expandedParticipant === participant.studentId;
+
+              return (
+                <TouchableOpacity
+                  key={participant.studentId}
+                  onPress={() => setExpandedParticipant(isExpanded ? null : participant.studentId)}
+                  activeOpacity={0.7}
+                >
+                  {index > 0 && <View className="border-b-gray-100 border-2 mt-2 mb-4" />}
+
+                  <View className="flex-row items-center justify-between mb-2">
+                    <View className="flex-1">
+                      <Text className="text-white font-pbold text-base">
+                        {participant.name}
+                      </Text>
+                      <Text className="text-gray-100 font-pregular text-sm mt-1">
+                        ID: {participant.studentId}
+                      </Text>
+                    </View>
+                    <Text className="text-gray-400 text-xl">
+                      {isExpanded ? '▲' : '▼'}
+                    </Text>
+                  </View>
+
+                  {isExpanded && (
+                    <View className="ml-2 mt-3">
+                      <View className="flex-col items-start gap-1 mb-2">
+                        <Text className="text-white font-pbold">Current Term:</Text>
+                        <Text className="text-gray-100 font-psemibold">
+                          {participant.currentTerm}
+                        </Text>
+                      </View>
+                      <View className="flex-col items-start gap-1 mb-2">
+                        <Text className="text-white font-pbold">Phone Number:</Text>
+                        <Text className="text-gray-100 font-psemibold">
+                          {participant.phoneNumber}
+                        </Text>
+                      </View>
+                      <View className="flex-col items-start gap-1 mb-2">
+                        <Text className="text-white font-pbold">Email Address:</Text>
+                        <Text className="text-gray-100 font-psemibold">
+                          {participant.email}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+      {user?.role === 'mentor' && !isUserRegistered && (
         <CustomButton
           title="Register for Event"
           handlePress={handleRegister}
@@ -192,6 +213,13 @@ const EventDetail = () => {
           isLoading={isPending}
           testID='register-event'
         />
+        )}
+        {user?.role === 'mentor' && isUserRegistered && (
+        <View className="bg-green-900 border-2 border-green-500 rounded-xl p-4 mt-7">
+          <Text className="text-green-400 text-center font-psemibold text-base">
+            ✓ You are registered for this event
+          </Text>
+        </View>
         )}
         {user?.role === 'admin' && (
         <CustomButton
