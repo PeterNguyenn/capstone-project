@@ -16,7 +16,14 @@ const SignUp = () => {
   const [form, setForm] = useState({
     username: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
+  })
+
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasSpecialChar: false
   })
 
   const { mutate: signUp, loading } = useApiMutation(
@@ -26,9 +33,36 @@ const SignUp = () => {
   const {setIsLoggedIn, setUser} =useGlobalContext();
   const {updateUserToken, isInitialized} = useNotifications();
 
+  const validatePassword = (password: string) => {
+    const requirements = {
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    setPasswordRequirements(requirements);
+    return requirements;
+  };
+
+  const handlePasswordChange = (password: string) => {
+    setForm({ ...form, password });
+    validatePassword(password);
+  };
+
   const handleSubmit = async () => {
-    if(!form.username || !form.email || !form.password) {
+    if(!form.username || !form.email || !form.password || !form.confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if(form.password !== form.confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    const requirements = validatePassword(form.password);
+    if(!requirements.minLength || !requirements.hasUpperCase || !requirements.hasSpecialChar) {
+      Alert.alert('Error', 'Password does not meet all requirements');
+      return;
     }
     try {
       const response = await signUp({
@@ -80,9 +114,34 @@ const SignUp = () => {
           <FormField
             title="Password"
             value={form.password}
-            handleChangeText={(e) => setForm({ ...form, password: e })}
+            handleChangeText={handlePasswordChange}
             otherStyles='mt-7'
             testID='password-field'
+          />
+
+          {form.password.length > 0 && (
+            <View className='mt-3 px-2'>
+              <Text className='text-gray-100 text-base font-pregular mb-2'>Password must contain:</Text>
+              <View className='space-y-1'>
+                <Text className={`text-sm ${passwordRequirements.minLength ? 'text-green-500' : 'text-gray-400'}`}>
+                  {passwordRequirements.minLength ? '✓' : '○'} At least 8 characters
+                </Text>
+                <Text className={`text-sm ${passwordRequirements.hasUpperCase ? 'text-green-500' : 'text-gray-400'}`}>
+                  {passwordRequirements.hasUpperCase ? '✓' : '○'} One uppercase letter
+                </Text>
+                <Text className={`text-sm ${passwordRequirements.hasSpecialChar ? 'text-green-500' : 'text-gray-400'}`}>
+                  {passwordRequirements.hasSpecialChar ? '✓' : '○'} One special character (!@#$%^&*...)
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <FormField
+            title="Confirm Password"
+            value={form.confirmPassword}
+            handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
+            otherStyles='mt-7'
+            testID='confirm-password-field'
           />
 
           <CustomButton title='Sign Up' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} testID='signup-button' />

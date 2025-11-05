@@ -237,18 +237,27 @@ export const leaveEvent = async (req: Request, res: Response) => {
 };
 
 /**
- * Admin-only: list mentors registered to an event
+ * List mentors registered to an event
+ * - Admin: returns all registered mentors
+ * - Mentor: returns only their own registration (or empty if not registered)
  * Prefers Applications (studentNumber/currentTerm/phone/email/name).
  * Falls back to Users and includes studentId/currentTerm/phoneNumber if present on the user.
  */
 export const getEventMentors = async (req: Request, res: Response) => {
   try {
     const eventId = req.params._id;
+    const user = (req as any).user;
 
     // 1) registrations for the event
-    const regs = await Registration.find({ event: eventId })
+    let regs = await Registration.find({ event: eventId })
       .select('userId')
       .lean();
+
+    // If mentor (not admin), only return their own registration
+    if (user && user.role === 'mentor') {
+      const mentorId = user.userId || user._id;
+      regs = regs.filter(r => r.userId?.toString() === mentorId.toString());
+    }
 
     if (!regs.length) {
       return res.status(200).json({ success: true, message: 'Event mentors', count: 0, data: [] });

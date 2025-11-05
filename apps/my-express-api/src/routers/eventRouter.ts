@@ -25,7 +25,7 @@ router.post('/', validate(CreateEventSchema), adminGuard, createEvent);
 router.patch('/:_id', adminGuard, updateEvent);
 router.post('/:_id/reminder', adminGuard, createEventReminder);
 router.post('/:_id/cancel', adminGuard, cancelEvent);
-router.get('/:_id/mentors', adminGuard, getEventMentors); // returns mentor info for the event
+router.get('/:_id/mentors', mentorGuard, getEventMentors); // returns mentor info for the event
 
 /**
  * Public / mentors routes
