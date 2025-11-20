@@ -11,8 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../../../components/CustomButton';
 import { router, useLocalSearchParams } from 'expo-router';
 import { icons } from '../../../constants';
-import { useUpdateAppointmentStatusMutation } from '../../../api/individual-queries/appointments/mutations';
-import { useApplication } from '../../../api/individual-queries/appointments/queries';
+import { useUpdateApplicationStatusMutation } from '../../../api/individual-queries/applications/mutations';
+import { useApplication } from '../../../api/individual-queries/applications/queries';
 import StatusChip from '../../../components/StatusChip';
 import { useGlobalContext } from '../../../context/GlobalProvider';
 import Loader from '../../../components/Loader';
@@ -21,8 +21,8 @@ const ApplicationDetail = () => {
   const { user } = useGlobalContext();
   
   console.log(user)
-  const { mutate: updateAppointmentStatus, isPending } =
-    useUpdateAppointmentStatusMutation({
+  const { mutate: updateApplicationStatus, isPending } =
+    useUpdateApplicationStatusMutation({
       onSuccess: () => {
         router.back();
       },
@@ -35,7 +35,7 @@ const ApplicationDetail = () => {
   const { data: applicationData } = useApplication({id }); 
   const application = applicationData?.data;
   const handleApprove = () => {
-    updateAppointmentStatus({
+    updateApplicationStatus({
       id,
       params:{
         status: 'accepted',
@@ -43,7 +43,7 @@ const ApplicationDetail = () => {
     });
   };
   const handleReject = () => {
-    updateAppointmentStatus({
+    updateApplicationStatus({
       id,
       params:{
         status: 'rejected',
@@ -59,284 +59,305 @@ const ApplicationDetail = () => {
 
   return (
     <SafeAreaView className="bg-primary h-full">
-      <ScrollView className="px-4 my-6">
-        <View className="flex-row items-center justify-between mb-7">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="flex items-start"
-          >
-            <Image
-              source={icons.leftArrow}
-              resizeMode="contain"
-              className="w-6 h-6"
-            />
-          </TouchableOpacity>
-          <Text className="text-2xl text-white font-psemibold">
-            Application Detail
-          </Text>
-          <StatusChip status={application.status}/>
-        </View>
-        <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-          <Text className="text-xl font-psemibold text-white mb-4">
-            Personal Information
-          </Text>
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Student Name:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.studentName}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View className="bg-black-200 pt-6 pb-8 px-4">
+          <View className="flex-row items-center justify-between mb-6">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="bg-black-100 p-3 rounded-lg"
+            >
+              <Image
+                source={icons.leftArrow}
+                resizeMode="contain"
+                className="w-5 h-5"
+                tintColor="#FF9C01"
+              />
+            </TouchableOpacity>
+            <Text className="text-xl text-white font-pbold">
+              Application Details
             </Text>
+            <StatusChip status={application.status}/>
           </View>
 
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Student Number:</Text>
-            <Text className="text-gray-100 font-psemibold">
+          {/* Applicant Header */}
+          <View className="items-center mt-4">
+            <View className="w-24 h-24 bg-secondary-100 rounded-full items-center justify-center mb-3">
+              <Text className="text-white text-4xl font-pbold text-center" style={{ lineHeight: 48 }}>
+                {application.studentName.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <Text className="text-white text-2xl font-pbold">
+              {application.studentName}
+            </Text>
+            <Text className="text-gray-100 text-base font-pregular mt-1">
               {application.studentNumber}
             </Text>
           </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Address:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.address}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Phone Number:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.phoneNumber}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Alternate Number:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.alternateNumber}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Email Address:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.emailAddress}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Dietary Restrictions:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.dietaryRestrictions}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Shirt Size:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.shirtSize}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              Accommodations Required:
-            </Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.accommodationsRequired}
-            </Text>
-          </View>
-        </View>
-        <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-          {/* Academic Information */}
-          <Text className="text-xl text-white font-pbold mb-4">
-            Academic Information
-          </Text>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Program of Study:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.programOfStudy}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Current Term:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.currentTerm}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              Number of Terms in Program:
-            </Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.numberOfTermsInProgram}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Campus:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.campus}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              Anticipated Graduation Date:
-            </Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.anticipatedGraduationDate}
-            </Text>
-          </View>
-        </View>
-        {/* Personal Preferences */}
-        <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-          <Text className="text-xl text-white font-pbold mb-4">
-            Personal Preferences
-          </Text>
-
-          {/* First Reference */}
-          <Text className="text-xl text-white font-pbold mb-4">
-            First Reference
-          </Text>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Name:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[0].name}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Relationship:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[0].relationship}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Phone Number:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[0].phoneNumber}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Email Address:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[0].emailAddress}
-            </Text>
-          </View>
-
-          <View className="border-b-gray-100 border-2 mt-2 mb-4" />
-
-          {/* Second Reference */}
-          <Text className="text-xl text-white font-pbold mb-4">
-            Second Reference
-          </Text>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Name:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[1].name}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Relationship:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[1].relationship}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Phone Number:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[1].phoneNumber}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Email Address:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.references[1].emailAddress}
-            </Text>
-          </View>
         </View>
 
-        <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-          {/* Essay Questions */}
-          <Text className="text-xl text-white font-pbold mb-4">
-            Essay Questions
-          </Text>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              Why Are You Interested?
+        {/* Content Section */}
+        <View className="px-4 -mt-4">
+          {/* Contact Information Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Contact Information
             </Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.whyInterested}
-            </Text>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Email</Text>
+              <Text className="text-white text-base font-pmedium">
+                {application.emailAddress}
+              </Text>
+            </View>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Phone</Text>
+              <Text className="text-white text-base font-pmedium">
+                {application.phoneNumber}
+              </Text>
+            </View>
+            {application.alternateNumber && (
+              <View className="mb-5">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Alternate Phone</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.alternateNumber}
+                </Text>
+              </View>
+            )}
+            <View>
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Address</Text>
+              <Text className="text-white text-base font-pmedium">
+                {application.address}
+              </Text>
+            </View>
           </View>
 
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              How Will You Make a Difference?
+          {/* Academic Information Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Academic Information
             </Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.makingDifference}
-            </Text>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Program of Study</Text>
+              <Text className="text-white text-base font-pmedium">
+                {application.programOfStudy}
+              </Text>
+            </View>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Campus</Text>
+              <Text className="text-white text-base font-pmedium capitalize">
+                {application.campus}
+              </Text>
+            </View>
+            <View className="flex-row gap-4 mb-5">
+              <View className="flex-1">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Current Term</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.currentTerm}
+                </Text>
+              </View>
+              <View className="flex-1">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Total Terms</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.numberOfTermsInProgram}
+                </Text>
+              </View>
+            </View>
+            <View>
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Graduation Date</Text>
+              <Text className="text-white text-base font-pmedium">
+                {application.anticipatedGraduationDate}
+              </Text>
+            </View>
           </View>
 
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Your Strengths:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.strengths}
+          {/* Additional Details Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Additional Details
             </Text>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Shirt Size</Text>
+              <Text className="text-white text-base font-pmedium">
+                {application.shirtSize}
+              </Text>
+            </View>
+            {application.dietaryRestrictions && (
+              <View className="mb-5">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Dietary Restrictions</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.dietaryRestrictions}
+                </Text>
+              </View>
+            )}
+            {application.accommodationsRequired && (
+              <View>
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Accommodations Required</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.accommodationsRequired}
+                </Text>
+              </View>
+            )}
           </View>
 
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Areas for Growth:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.areasOfGrowth}
+          {/* References Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Professional References
             </Text>
+
+            {/* First Reference */}
+            <View className="mb-6">
+              <Text className="text-secondary text-base font-psemibold mb-4">
+                First Reference
+              </Text>
+              <View className="mb-4">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Name</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.references[0].name}
+                </Text>
+              </View>
+              <View className="mb-4">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Relationship</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.references[0].relationship}
+                </Text>
+              </View>
+              <View className="flex-row gap-4">
+                <View className="flex-1">
+                  <Text className="text-gray-100 text-sm font-pregular mb-2">Phone</Text>
+                  <Text className="text-white text-base font-pmedium">
+                    {application.references[0].phoneNumber}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-gray-100 text-sm font-pregular mb-2">Email</Text>
+                  <Text className="text-white text-base font-pmedium">
+                    {application.references[0].emailAddress}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View className="border-t border-gray-700 my-5" />
+
+            {/* Second Reference */}
+            <View>
+              <Text className="text-secondary text-base font-psemibold mb-4">
+                Second Reference
+              </Text>
+              <View className="mb-4">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Name</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.references[1].name}
+                </Text>
+              </View>
+              <View className="mb-4">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Relationship</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {application.references[1].relationship}
+                </Text>
+              </View>
+              <View className="flex-row gap-4">
+                <View className="flex-1">
+                  <Text className="text-gray-100 text-sm font-pregular mb-2">Phone</Text>
+                  <Text className="text-white text-base font-pmedium">
+                    {application.references[1].phoneNumber}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-gray-100 text-sm font-pregular mb-2">Email</Text>
+                  <Text className="text-white text-base font-pmedium">
+                    {application.references[1].emailAddress}
+                  </Text>
+                </View>
+              </View>
+            </View>
           </View>
 
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Extra Skills:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.extraSkills}
+          {/* Motivation & Goals Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Motivation & Goals
             </Text>
+            <View className="mb-5">
+              <Text className="text-secondary text-base font-psemibold mb-3">
+                Why Are You Interested?
+              </Text>
+              <Text className="text-white text-base font-pregular leading-6">
+                {application.whyInterested}
+              </Text>
+            </View>
+            <View>
+              <Text className="text-secondary text-base font-psemibold mb-3">
+                How Will You Make a Difference?
+              </Text>
+              <Text className="text-white text-base font-pregular leading-6">
+                {application.makingDifference}
+              </Text>
+            </View>
           </View>
 
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              Additional Information:
+          {/* Skills & Development Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Skills & Development
             </Text>
-            <Text className="text-gray-100 font-psemibold">
-              {application.additionalInfo}
-            </Text>
+            <View className="mb-5">
+              <Text className="text-secondary text-base font-psemibold mb-3">
+                Strengths
+              </Text>
+              <Text className="text-white text-base font-pregular leading-6">
+                {application.strengths}
+              </Text>
+            </View>
+            <View className="mb-5">
+              <Text className="text-secondary text-base font-psemibold mb-3">
+                Areas for Growth
+              </Text>
+              <Text className="text-white text-base font-pregular leading-6">
+                {application.areasOfGrowth}
+              </Text>
+            </View>
+            <View className="mb-5">
+              <Text className="text-secondary text-base font-psemibold mb-3">
+                Additional Skills
+              </Text>
+              <Text className="text-white text-base font-pregular leading-6">
+                {application.extraSkills}
+              </Text>
+            </View>
+            {application.additionalInfo && (
+              <View>
+                <Text className="text-secondary text-base font-psemibold mb-3">
+                  Additional Information
+                </Text>
+                <Text className="text-white text-base font-pregular leading-6">
+                  {application.additionalInfo}
+                </Text>
+              </View>
+            )}
           </View>
+
+          {/* Action Buttons - Admin Only */}
+          {user?.role === 'admin' && application.status === 'pending' && (
+            <View className="flex-row gap-3 mb-8">
+              <CustomButton
+                title="Reject"
+                handlePress={handleReject}
+                containerStyle="flex-1 bg-red-500"
+                textStyle="text-white"
+                isLoading={isPending}
+              />
+              <CustomButton
+                title="Approve"
+                handlePress={handleApprove}
+                containerStyle="flex-1 bg-green-500"
+                textStyle="text-white"
+                isLoading={isPending}
+              />
+            </View>
+          )}
         </View>
-      {user?.role === 'admin' && (
-        <View className="flex-row items-center gap-2">
-          <CustomButton
-            title="Reject"
-            handlePress={handleReject}
-            containerStyle="mt-7 bg-status-rejected flex-1"
-            textStyle="text-white"
-            isLoading={isPending}
-          />
-          <CustomButton
-            title="Approve"
-            handlePress={handleApprove}
-            containerStyle="mt-7 bg-status-accepted flex-1"
-            textStyle="text-white"
-            isLoading={isPending}
-          />
-        </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );

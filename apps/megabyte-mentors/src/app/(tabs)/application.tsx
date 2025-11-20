@@ -5,8 +5,8 @@ import FormField from '../../components/FormField';
 import { isObjectFilledOut } from '../../utils/check-empty-object';
 import { router } from 'expo-router';
 import { ApiError } from '../../api/utils';
-import { useCreateAppointmentMutation } from '../../api/individual-queries/appointments/mutations';
-import { useApplications } from '../../api/individual-queries/appointments/queries';
+import { useCreateApplicationMutation } from '../../api/individual-queries/applications/mutations';
+import { useApplications } from '../../api/individual-queries/applications/queries';
 import { useGlobalContext } from '../../context/GlobalProvider';
 import EmptyState from '../../components/EmptyState';
 import PickerField from '../../components/PickerField';
@@ -59,7 +59,7 @@ const Application = () => {
   const [secondStepForm, setSecondStepForm] = useState(secondStep);
   const [thirdStepForm, setThirdStepForm] = useState(thirdStep);
   const [error, setError] = useState(false);
-  const { user } = useGlobalContext();
+  const { user} = useGlobalContext();
 
   const { data: applications } = useApplications(
     user?.role !== 'admin' && user?._id
@@ -69,7 +69,7 @@ const Application = () => {
       : {}
   );
 
-  const { mutate: createApplication, isPending } = useCreateAppointmentMutation(
+  const { mutate: createApplication, isPending } = useCreateApplicationMutation(
     {
       onSuccess: () => {
         Alert.alert('Success', 'Application submitted successfully');
@@ -84,9 +84,12 @@ const Application = () => {
   );
 
   const onNextFirstStep = () => {
-    if (!isObjectFilledOut(firstStepForm)) {
+    // Create a copy of firstStepForm excluding optional fields
+    const { alternateNumber, dietaryRestrictions, accommodationsRequired, ...requiredFields } = firstStepForm;
+
+    if (!isObjectFilledOut(requiredFields)) {
       setError(true);
-      return Alert.alert('Please provide all fields');
+      return Alert.alert('Please provide all required fields');
     } else {
       setError(false);
     }
@@ -100,9 +103,12 @@ const Application = () => {
     }
   }
   const onSubmit = async () => {
-    if (!isObjectFilledOut(thirdStepForm)) {
+    // Create a copy of thirdStepForm excluding optional fields
+    const { additionalInfo, ...requiredFields } = thirdStepForm;
+
+    if (!isObjectFilledOut(requiredFields)) {
       setError(true);
-      return Alert.alert('Please provide all fields');
+      return Alert.alert('Please provide all required fields');
     } else {
       setError(false);
     }
@@ -167,131 +173,165 @@ const Application = () => {
         labelFontFamily="Poppins"
         disabledStepNumColor="#041F4A"
         disabledStepIconColor="#CDCDE0"
+        topOffset={30}
+        marginBottom={0}
       >
         <ProgressStep
           label="Personal Information"
           onNext={onNextFirstStep}
           errors={error}
+          buttonBottomOffset={0}
         >
-            <FormField
-              title="Student Name"
-              value={firstStepForm.studentName}
-              placeholder="Enter your full name..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, studentName: e })}
-              otherStyles="mt-10"
-            />
-            <FormField
-              title="Student Number"
-              value={firstStepForm.studentNumber}
-              placeholder="Enter your student ID number..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, studentNumber: e })}
-              otherStyles="mt-6"
-              keyboardType="numeric"
-            />
+          <ScrollView
+            className="flex-1 px-0"
+            showsVerticalScrollIndicator={false}
+          >
+            <Text className="text-white text-xl font-pbold mt-6 mb-2">
+              Tell us about yourself
+            </Text>
+            <Text className="text-gray-100 text-sm font-pregular mb-6">
+              Please provide your basic information
+            </Text>
 
-            <FormField
-              title="Address"
-              value={firstStepForm.address}
-              placeholder="Enter your current address..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, address: e })}
-              otherStyles="mt-6"
-            />
+            {/* Basic Information Card */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Basic Information
+              </Text>
+              <FormField
+                title="Student Name"
+                value={firstStepForm.studentName}
+                placeholder="Enter your full name..."
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, studentName: e })}
+              />
+              <FormField
+                title="Student Number"
+                value={firstStepForm.studentNumber}
+                placeholder="Enter your student ID number..."
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, studentNumber: e })}
+                otherStyles="mt-4"
+                keyboardType="numeric"
+              />
+            </View>
 
-            <FormField
-              title="Phone Number"
-              value={firstStepForm.phoneNumber}
-              placeholder="Enter your primary phone number..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, phoneNumber: e })}
-              otherStyles="mt-6"
-            />
+            {/* Contact Information Card */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Contact Information
+              </Text>
+              <FormField
+                title="Email Address"
+                value={firstStepForm.emailAddress}
+                placeholder="Enter your email address..."
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, emailAddress: e })}
+                keyboardType="email-address"
+              />
+              <FormField
+                title="Phone Number"
+                value={firstStepForm.phoneNumber}
+                placeholder="Enter your primary phone number..."
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, phoneNumber: e })}
+                otherStyles="mt-4"
+                keyboardType="phone-pad"
+              />
+              <FormField
+                title="Alternate Number (Optional)"
+                value={firstStepForm.alternateNumber}
+                placeholder="Enter an alternate phone number..."
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, alternateNumber: e })}
+                otherStyles="mt-4"
+                keyboardType="phone-pad"
+              />
+              <FormField
+                title="Address"
+                value={firstStepForm.address}
+                placeholder="Enter your current address..."
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, address: e })}
+                otherStyles="mt-4"
+              />
+            </View>
 
-            <FormField
-              title="Alternate Number"
-              value={firstStepForm.alternateNumber}
-              placeholder="Enter an alternate phone number (optional)..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, alternateNumber: e })}
-              otherStyles="mt-6"
-              keyboardType="numeric"
-            />
+            {/* Academic Information Card */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Academic Information
+              </Text>
+              <PickerField
+                data={programOptions}
+                title="Program of Study"
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, programOfStudy: e })}
+                value={firstStepForm.programOfStudy}
+              />
+              <PickerField
+                data={campusOptions}
+                title="Campus"
+                otherStyles="mt-4"
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, campus: e })}
+                value={firstStepForm.campus}
+              />
+              <FormField
+                title="Current Term"
+                value={firstStepForm.currentTerm}
+                placeholder="e.g., 3"
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, currentTerm: e })}
+                otherStyles="mt-4"
+                keyboardType="numeric"
+              />
+              <FormField
+                title="Number of Terms in Program"
+                value={firstStepForm.numberOfTermsInProgram}
+                placeholder="e.g., 6"
+                handleChangeText={(e) =>
+                  setFirstStepForm({ ...firstStepForm, numberOfTermsInProgram: e })
+                }
+                otherStyles="mt-4"
+                keyboardType="numeric"
+              />
+              <FormField
+                title="Anticipated Graduation Date"
+                value={firstStepForm.anticipatedGraduationDate}
+                placeholder="e.g., May 2025"
+                handleChangeText={(e) =>
+                  setFirstStepForm({ ...firstStepForm, anticipatedGraduationDate: e })
+                }
+                otherStyles="mt-4"
+              />
+            </View>
 
-            <FormField
-              title="Email Address"
-              value={firstStepForm.emailAddress}
-              placeholder="Enter your email address..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, emailAddress: e })}
-              otherStyles="mt-6"
-            />
-
-            <PickerField
-              data={programOptions}
-              title="Program of Study"
-              otherStyles="mt-6"
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, programOfStudy: e })}
-            />
-
-            <FormField
-              title="Current Term"
-              value={firstStepForm.currentTerm}
-              placeholder="Enter your current term/semester..."
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, currentTerm: e })}
-              otherStyles="mt-6"
-              keyboardType="numeric"
-            />
-
-            <FormField
-              title="Number of Terms in Program"
-              value={firstStepForm.numberOfTermsInProgram}
-              placeholder="Enter total number of terms in your program..."
-              handleChangeText={(e) =>
-                setFirstStepForm({ ...firstStepForm, numberOfTermsInProgram: e })
-              }
-              otherStyles="mt-6"
-              keyboardType="numeric"
-            />
-
-            <PickerField
-              data={campusOptions}
-              title="Campus"
-              otherStyles="mt-6"
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, campus: e })}
-            />
-
-            <FormField
-              title="Anticipated Graduation Date"
-              value={firstStepForm.anticipatedGraduationDate}
-              placeholder="Enter your expected graduation date..."
-              handleChangeText={(e) =>
-                setFirstStepForm({ ...firstStepForm, anticipatedGraduationDate: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <FormField
-              title="Dietary Restrictions"
-              value={firstStepForm.dietaryRestrictions}
-              placeholder="List any dietary restrictions or preferences..."
-              handleChangeText={(e) =>
-                setFirstStepForm({ ...firstStepForm, dietaryRestrictions: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <PickerField
-              data={shirtSizes}
-              title="Shirt Size"
-              otherStyles="mt-6"
-              handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, shirtSize: e })}
-            />
-
-            <FormField
-              title="Accommodations Required"
-              value={firstStepForm.accommodationsRequired}
-              placeholder="Describe any accommodations you may need..."
-              handleChangeText={(e) =>
-                setFirstStepForm({ ...firstStepForm, accommodationsRequired: e })
-              }
-              otherStyles="mt-6"
-            />
+            {/* Additional Details Card */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Additional Details
+              </Text>
+              <PickerField
+                data={shirtSizes}
+                title="Shirt Size"
+                handleChangeText={(e) => setFirstStepForm({ ...firstStepForm, shirtSize: e })}
+                value={firstStepForm.shirtSize}
+              />
+              <FormField
+                title="Dietary Restrictions (Optional)"
+                value={firstStepForm.dietaryRestrictions}
+                placeholder="List any dietary restrictions..."
+                handleChangeText={(e) =>
+                  setFirstStepForm({ ...firstStepForm, dietaryRestrictions: e })
+                }
+                otherStyles="mt-4"
+              />
+              <FormField
+                title="Accommodations Required (Optional)"
+                value={firstStepForm.accommodationsRequired}
+                placeholder="Describe any accommodations you may need..."
+                handleChangeText={(e) =>
+                  setFirstStepForm({ ...firstStepForm, accommodationsRequired: e })
+                }
+                otherStyles="mt-4"
+                multiline
+                numberOfLines={3}
+                inputStyles="h-24"
+              />
+            </View>
+          </ScrollView>
         </ProgressStep>
         <ProgressStep
           label="References"
@@ -299,85 +339,105 @@ const Application = () => {
           onNext={onNextSecondStep}
           errors={error}
         >
-            <FormField
-              title="First Reference Name"
-              value={secondStepForm.firstReferenceName}
-              placeholder="Enter your first reference's full name..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, firstReferenceName: e })
-              }
-              otherStyles="mt-6"
-            />
+          <ScrollView
+            className="flex-1 px-0"
+            showsVerticalScrollIndicator={false}
+          >
+            <Text className="text-white text-xl font-pbold mt-6 mb-2">
+              Professional References
+            </Text>
+            <Text className="text-gray-100 text-sm font-pregular mb-6">
+              Please provide two professional references (e.g., professors, employers, mentors)
+            </Text>
 
-            <FormField
-              title="First Reference Relationship"
-              value={secondStepForm.firstReferenceRelationship}
-              placeholder="How do you know this reference? (e.g., Professor, Employer)..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, firstReferenceRelationship: e })
-              }
-              otherStyles="mt-6"
-            />
+            {/* First Reference Card */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-secondary text-sm font-psemibold mb-4">
+                First Reference
+              </Text>
+              <FormField
+                title="Full Name"
+                value={secondStepForm.firstReferenceName}
+                placeholder="Enter reference's full name..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, firstReferenceName: e })
+                }
+              />
+              <FormField
+                title="Relationship"
+                value={secondStepForm.firstReferenceRelationship}
+                placeholder="e.g., Professor, Employer, Mentor..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, firstReferenceRelationship: e })
+                }
+                otherStyles="mt-4"
+              />
+              <FormField
+                title="Phone Number"
+                value={secondStepForm.firstReferencePhoneNumber}
+                placeholder="Enter phone number..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, firstReferencePhoneNumber: e })
+                }
+                otherStyles="mt-4"
+                keyboardType="phone-pad"
+              />
+              <FormField
+                title="Email Address"
+                value={secondStepForm.firstReferenceEmailAddress}
+                placeholder="Enter email address..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, firstReferenceEmailAddress: e })
+                }
+                otherStyles="mt-4"
+                keyboardType="email-address"
+              />
+            </View>
 
-            <FormField
-              title="First Reference Phone Number"
-              value={secondStepForm.firstReferencePhoneNumber}
-              placeholder="Enter your first reference's phone number..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, firstReferencePhoneNumber: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <FormField
-              title="First Reference Email Address"
-              value={secondStepForm.firstReferenceEmailAddress}
-              placeholder="Enter your first reference's email address..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, firstReferenceEmailAddress: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <FormField
-              title="Second Reference Name"
-              value={secondStepForm.secondReferenceName}
-              placeholder="Enter your second reference's full name..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, secondReferenceName: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <FormField
-              title="Second Reference Relationship"
-              value={secondStepForm.secondReferenceRelationship}
-              placeholder="How do you know this reference? (e.g., Professor, Employer)..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, secondReferenceRelationship: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <FormField
-              title="Second Reference Phone Number"
-              value={secondStepForm.secondReferencePhoneNumber}
-              placeholder="Enter your second reference's phone number..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, secondReferencePhoneNumber: e })
-              }
-              otherStyles="mt-6"
-            />
-
-            <FormField
-              title="Second Reference Email Address"
-              value={secondStepForm.secondReferenceEmailAddress}
-              placeholder="Enter your second reference's email address..."
-              handleChangeText={(e) =>
-                setSecondStepForm({ ...secondStepForm, secondReferenceEmailAddress: e })
-              }
-              otherStyles="mt-6"
-            />
+            {/* Second Reference Card */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-secondary text-sm font-psemibold mb-4">
+                Second Reference
+              </Text>
+              <FormField
+                title="Full Name"
+                value={secondStepForm.secondReferenceName}
+                placeholder="Enter reference's full name..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, secondReferenceName: e })
+                }
+              />
+              <FormField
+                title="Relationship"
+                value={secondStepForm.secondReferenceRelationship}
+                placeholder="e.g., Professor, Employer, Mentor..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, secondReferenceRelationship: e })
+                }
+                otherStyles="mt-4"
+              />
+              <FormField
+                title="Phone Number"
+                value={secondStepForm.secondReferencePhoneNumber}
+                placeholder="Enter phone number..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, secondReferencePhoneNumber: e })
+                }
+                otherStyles="mt-4"
+                keyboardType="phone-pad"
+              />
+              <FormField
+                title="Email Address"
+                value={secondStepForm.secondReferenceEmailAddress}
+                placeholder="Enter email address..."
+                handleChangeText={(e) =>
+                  setSecondStepForm({ ...secondStepForm, secondReferenceEmailAddress: e })
+                }
+                otherStyles="mt-4"
+                keyboardType="email-address"
+              />
+            </View>
+          </ScrollView>
         </ProgressStep>
         <ProgressStep
           label="Interests"
@@ -385,79 +445,124 @@ const Application = () => {
           onSubmit={onSubmit}
           errors={error}
         >
-            <FormField
-              title="Why Are You Interested?"
-              value={thirdStepForm.whyInterested}
-              placeholder="Explain why you are interested in this opportunity..."
-              handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, whyInterested: e })}
-              otherStyles="mt-6"
-              multiline
-              numberOfLines={4}
-              maxLength={250}
-              inputStyles="h-48"
-            />
+          <ScrollView
+            className="flex-1 px-0"
+            showsVerticalScrollIndicator={false}
+          >
+            <Text className="text-white text-xl font-pbold mt-6 mb-2">
+              Tell Your Story
+            </Text>
+            <Text className="text-gray-100 text-sm font-pregular mb-6">
+              Help us understand your motivations and goals (max 250 characters each)
+            </Text>
 
-            <FormField
-              title="How Will You Make a Difference?"
-              value={thirdStepForm.makingDifference}
-              placeholder="Describe how you hope to make a difference..."
-              handleChangeText={(e) =>
-                setThirdStepForm({ ...thirdStepForm, makingDifference: e })
-              }
-              otherStyles="mt-6"
-              multiline
-              numberOfLines={4}
-              maxLength={250}
-              inputStyles="h-48"
-            />
+            {/* Motivation Section */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Your Motivation
+              </Text>
+              <FormField
+                title="Why Are You Interested?"
+                value={thirdStepForm.whyInterested}
+                placeholder="Share what excites you about this opportunity..."
+                handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, whyInterested: e })}
+                multiline
+                numberOfLines={4}
+                maxLength={250}
+                inputStyles="h-24"
+              />
+              <Text className="text-gray-400 text-xs text-right mt-1">
+                {thirdStepForm.whyInterested.length}/250
+              </Text>
 
-            <FormField
-              title="Your Strengths"
-              value={thirdStepForm.strengths}
-              placeholder="List your key strengths and how they will contribute..."
-              handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, strengths: e })}
-              otherStyles="mt-6"
-              multiline
-              numberOfLines={4}
-              maxLength={250}
-              inputStyles="h-48"
-            />
+              <FormField
+                title="How Will You Make a Difference?"
+                value={thirdStepForm.makingDifference}
+                placeholder="Describe the impact you hope to create..."
+                handleChangeText={(e) =>
+                  setThirdStepForm({ ...thirdStepForm, makingDifference: e })
+                }
+                otherStyles="mt-4"
+                multiline
+                numberOfLines={4}
+                maxLength={250}
+                inputStyles="h-24"
+              />
+              <Text className="text-gray-400 text-xs text-right mt-1">
+                {thirdStepForm.makingDifference.length}/250
+              </Text>
+            </View>
 
-            <FormField
-              title="Areas for Growth"
-              value={thirdStepForm.areasOfGrowth}
-              placeholder="Describe areas where you'd like to grow or improve..."
-              handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, areasOfGrowth: e })}
-              otherStyles="mt-6"
-              multiline
-              numberOfLines={4}
-              maxLength={250}
-              inputStyles="h-48"
-            />
+            {/* Skills & Growth Section */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Skills & Development
+              </Text>
+              <FormField
+                title="Your Strengths"
+                value={thirdStepForm.strengths}
+                placeholder="What are your key strengths and talents..."
+                handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, strengths: e })}
+                multiline
+                numberOfLines={4}
+                maxLength={250}
+                inputStyles="h-24"
+              />
+              <Text className="text-gray-400 text-xs text-right mt-1">
+                {thirdStepForm.strengths.length}/250
+              </Text>
 
-            <FormField
-              title="Extra Skills"
-              value={thirdStepForm.extraSkills}
-              placeholder="List any additional skills relevant to this application..."
-              handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, extraSkills: e })}
-              otherStyles="mt-6"
-              multiline
-              numberOfLines={4}
-              maxLength={250}
-              inputStyles="h-48"
-            />
+              <FormField
+                title="Areas for Growth"
+                value={thirdStepForm.areasOfGrowth}
+                placeholder="What skills would you like to develop..."
+                handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, areasOfGrowth: e })}
+                otherStyles="mt-4"
+                multiline
+                numberOfLines={4}
+                maxLength={250}
+                inputStyles="h-24"
+              />
+              <Text className="text-gray-400 text-xs text-right mt-1">
+                {thirdStepForm.areasOfGrowth.length}/250
+              </Text>
 
-            <FormField
-              title="Additional Information"
-              value={thirdStepForm.additionalInfo}
-              placeholder="Share any other information you'd like us to know..."
-              handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, additionalInfo: e })}
-              otherStyles="mt-6"
-              multiline
-              numberOfLines={4}
-              maxLength={250}
-              inputStyles="h-48"
-            />
+              <FormField
+                title="Extra Skills"
+                value={thirdStepForm.extraSkills}
+                placeholder="Any additional relevant skills or experiences..."
+                handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, extraSkills: e })}
+                otherStyles="mt-4"
+                multiline
+                numberOfLines={4}
+                maxLength={250}
+                inputStyles="h-24"
+              />
+              <Text className="text-gray-400 text-xs text-right mt-1">
+                {thirdStepForm.extraSkills.length}/250
+              </Text>
+            </View>
+
+            {/* Additional Information Section */}
+            <View className="bg-black-100 rounded-2xl p-5 mb-4">
+              <Text className="text-gray-100 text-xs font-pmedium mb-4 uppercase">
+                Additional Information
+              </Text>
+              <FormField
+                title="Anything Else We Should Know?"
+                value={thirdStepForm.additionalInfo}
+                placeholder="Share any other relevant information..."
+                handleChangeText={(e) => setThirdStepForm({ ...thirdStepForm, additionalInfo: e })}
+                multiline
+                numberOfLines={4}
+                maxLength={250}
+                inputStyles="h-24"
+              />
+              <Text className="text-gray-400 text-xs text-right mt-1">
+                {thirdStepForm.additionalInfo.length}/250
+              </Text>
+            </View>
+          </ScrollView>
         </ProgressStep>
       </ProgressSteps>
     </SafeAreaView>
