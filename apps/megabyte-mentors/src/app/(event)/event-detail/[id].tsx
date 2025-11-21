@@ -57,178 +57,219 @@ const EventDetail = () => {
 
   return (
     <SafeAreaView className="bg-primary h-full">
-      <ScrollView className="px-4 my-6">
-        <View className="flex-row items-center justify-between mb-7">
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className="flex items-start"
-          >
-            <Image
-              source={icons.leftArrow}
-              resizeMode="contain"
-              className="w-6 h-6"
-            />
-          </TouchableOpacity>
-          <Text className="text-2xl text-white font-psemibold">
-            Event Detail
-          </Text>
-          <CapacityChip capacity={event.capacity} attendeesCount={event.attendeesCount}/>
-        </View>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View className="bg-black-200 pt-6 pb-8 px-4">
+          <View className="flex-row items-center justify-between mb-6">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="bg-black-100 p-3 rounded-lg"
+            >
+              <Image
+                source={icons.leftArrow}
+                resizeMode="contain"
+                className="w-5 h-5"
+                tintColor="#FF9C01"
+              />
+            </TouchableOpacity>
+            <Text className="text-xl text-white font-pbold">
+              Event Details
+            </Text>
+            <CapacityChip capacity={event.capacity} attendeesCount={event.attendeesCount}/>
+          </View>
 
-        <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-          <Text className="text-xl font-psemibold text-white mb-4">
-            Event Information
-          </Text>
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Title:</Text>
-            <Text className="text-gray-100 font-psemibold">
+          {/* Event Title Header */}
+          <View className="items-center mt-4">
+            <View className="w-20 h-20 bg-secondary-100 rounded-full items-center justify-center mb-3">
+              <Text className="text-white text-3xl font-pbold text-center" style={{ lineHeight: 40 }}>
+                {event.title.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <Text className="text-white text-2xl font-pbold text-center">
               {event.title}
             </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Description:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.shortDescription}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Date:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.date}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Start Time:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.startTime}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">End Time:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.endTime}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Mentors registered:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.attendeesCount}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Capacity (mentors):</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.capacity}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">Location:</Text>
-            <Text className="text-gray-100 font-psemibold">
-              {event.location}
-            </Text>
-          </View>
-
-          <View className="flex-col items-start gap-1 mb-2 ml-2">
-            <Text className="text-white font-pbold">
-              Campus:
-            </Text>
-            <Text className="text-gray-100 font-psemibold">
+            <Text className="text-gray-100 text-base font-pregular mt-2 text-center capitalize">
               {event.campus}
             </Text>
           </View>
         </View>
 
-        {user?.role === 'admin' && eventMentorData && eventMentorData.data.length > 0 && (
-          <View className="bg-card border-2 border-solid border-border rounded-xl shadow-md p-4 mb-4">
-            <Text className="text-xl text-white font-pbold mb-4">
-              Event Participants ({eventMentorData.data.length})
+        {/* Content Section */}
+        <View className="px-4 -mt-4">
+          {/* Description Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              About This Event
             </Text>
-
-            {eventMentorData.data.map((participant, index) => {
-              const isExpanded = expandedParticipant === participant.studentId;
-
-              return (
-                <TouchableOpacity
-                  key={participant.studentId}
-                  onPress={() => setExpandedParticipant(isExpanded ? null : participant.studentId)}
-                  activeOpacity={0.7}
-                >
-                  {index > 0 && <View className="border-b-gray-100 border-2 mt-2 mb-4" />}
-
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="flex-1">
-                      <Text className="text-white font-pbold text-base">
-                        {participant.name}
-                      </Text>
-                      <Text className="text-gray-100 font-pregular text-sm mt-1">
-                        ID: {participant.studentId}
-                      </Text>
-                    </View>
-                    <Text className="text-gray-400 text-xl">
-                      {isExpanded ? '▲' : '▼'}
-                    </Text>
-                  </View>
-
-                  {isExpanded && (
-                    <View className="ml-2 mt-3">
-                      <View className="flex-col items-start gap-1 mb-2">
-                        <Text className="text-white font-pbold">Current Term:</Text>
-                        <Text className="text-gray-100 font-psemibold">
-                          {participant.currentTerm}
-                        </Text>
-                      </View>
-                      <View className="flex-col items-start gap-1 mb-2">
-                        <Text className="text-white font-pbold">Phone Number:</Text>
-                        <Text className="text-gray-100 font-psemibold">
-                          {participant.phoneNumber}
-                        </Text>
-                      </View>
-                      <View className="flex-col items-start gap-1 mb-2">
-                        <Text className="text-white font-pbold">Email Address:</Text>
-                        <Text className="text-gray-100 font-psemibold">
-                          {participant.email}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            <Text className="text-white text-base font-pregular leading-6">
+              {event.shortDescription}
+            </Text>
           </View>
-        )}
 
-      {user?.role === 'mentor' && !isUserRegistered && (
-        <CustomButton
-          title="Register for Event"
-          handlePress={handleRegister}
-          containerStyle="mt-7 flex-1"
-          textStyle="text-white"
-          isLoading={isPending}
-          testID='register-event'
-        />
-        )}
-        {user?.role === 'mentor' && isUserRegistered && (
-        <View className="bg-green-900 border-2 border-green-500 rounded-xl p-4 mt-7">
-          <Text className="text-green-400 text-center font-psemibold text-base">
-            ✓ You are registered for this event
-          </Text>
+          {/* Date & Time Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Date & Time
+            </Text>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Date</Text>
+              <Text className="text-white text-base font-pmedium">
+                {new Date(event.date).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </Text>
+            </View>
+            <View className="flex-row gap-4">
+              <View className="flex-1">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Start Time</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {event.startTime}
+                </Text>
+              </View>
+              <View className="flex-1">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">End Time</Text>
+                <Text className="text-white text-base font-pmedium">
+                  {event.endTime}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Location Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Location
+            </Text>
+            <View className="mb-5">
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Venue</Text>
+              <Text className="text-white text-base font-pmedium">
+                {event.location}
+              </Text>
+            </View>
+            <View>
+              <Text className="text-gray-100 text-sm font-pregular mb-2">Campus</Text>
+              <Text className="text-white text-base font-pmedium capitalize">
+                {event.campus}
+              </Text>
+            </View>
+          </View>
+
+          {/* Capacity Card */}
+          <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+            <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+              Registration
+            </Text>
+            <View className="flex-row gap-4">
+              <View className="flex-1">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Registered Mentors</Text>
+                <Text className="text-white text-3xl font-pbold">
+                  {event.attendeesCount}
+                </Text>
+              </View>
+              <View className="flex-1">
+                <Text className="text-gray-100 text-sm font-pregular mb-2">Total Capacity</Text>
+                <Text className="text-white text-3xl font-pbold">
+                  {event.capacity}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Participants List - Admin Only */}
+          {user?.role === 'admin' && eventMentorData && eventMentorData.data.length > 0 && (
+            <View className="bg-black-100 rounded-2xl p-6 mb-4 shadow-lg">
+              <Text className="text-gray-100 text-sm font-pmedium mb-5 uppercase">
+                Registered Participants ({eventMentorData.data.length})
+              </Text>
+
+              {eventMentorData.data.map((participant, index) => {
+                const isExpanded = expandedParticipant === participant.studentId;
+
+                return (
+                  <View key={participant.studentId}>
+                    {index > 0 && <View className="border-t border-gray-700 my-5" />}
+
+                    <TouchableOpacity
+                      onPress={() => setExpandedParticipant(isExpanded ? null : participant.studentId)}
+                      activeOpacity={0.7}
+                    >
+                      <View className="flex-row items-center justify-between">
+                        <View className="flex-1">
+                          <Text className="text-white font-pbold text-base">
+                            {participant.name}
+                          </Text>
+                          <Text className="text-gray-100 font-pregular text-sm mt-1">
+                            Student ID: {participant.studentId}
+                          </Text>
+                        </View>
+                        <View className="bg-black-200 p-2 rounded-lg">
+                          <Text className="text-secondary text-base">
+                            {isExpanded ? '▲' : '▼'}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {isExpanded && (
+                        <View className="mt-4 ml-2">
+                          <View className="mb-4">
+                            <Text className="text-gray-100 text-sm font-pregular mb-2">Current Term</Text>
+                            <Text className="text-white text-base font-pmedium">
+                              {participant.currentTerm}
+                            </Text>
+                          </View>
+                          <View className="mb-4">
+                            <Text className="text-gray-100 text-sm font-pregular mb-2">Phone Number</Text>
+                            <Text className="text-white text-base font-pmedium">
+                              {participant.phoneNumber}
+                            </Text>
+                          </View>
+                          <View>
+                            <Text className="text-gray-100 text-sm font-pregular mb-2">Email Address</Text>
+                            <Text className="text-white text-base font-pmedium">
+                              {participant.email}
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          {user?.role === 'mentor' && !isUserRegistered && (
+            <CustomButton
+              title="Register for Event"
+              handlePress={handleRegister}
+              containerStyle="mb-8"
+              textStyle="text-white"
+              isLoading={isPending}
+              testID='register-event'
+            />
+          )}
+
+          {user?.role === 'mentor' && isUserRegistered && (
+            <View className="bg-green-500/10 border-2 border-green-500 rounded-2xl p-4 mb-8">
+              <Text className="text-green-500 text-center font-psemibold text-base">
+                ✓ You are registered for this event
+              </Text>
+            </View>
+          )}
+
+          {user?.role === 'admin' && (
+            <CustomButton
+              title="Send Event Reminder"
+              handlePress={() => router.push(`/event-reminder/${id}`)}
+              containerStyle="mb-8"
+              textStyle="text-white"
+            />
+          )}
         </View>
-        )}
-        {user?.role === 'admin' && (
-        <CustomButton
-          title="Send Event Reminder"
-          handlePress={() => router.push(`/event-reminder/${id}`)}
-          containerStyle="mt-7 flex-1"
-          textStyle="text-white"
-        />
-        )}
       </ScrollView>
     </SafeAreaView>
   );

@@ -20,16 +20,16 @@ const applicationSchema = new mongoose.Schema(
     numberOfTermsInProgram: { type: String, required: true },
     campus: { type: String, required: true },
     anticipatedGraduationDate: { type: String, required: true },
-    dietaryRestrictions: { type: String, required: true },
+    dietaryRestrictions: { type: String },
     shirtSize: { type: String, required: true },
-    accommodationsRequired: { type: String, required: true },
+    accommodationsRequired: { type: String },
     references: { type: [referenceSchema], required: true },
     whyInterested: { type: String, required: true },
     makingDifference: { type: String, required: true },
     strengths: { type: String, required: true },
     areasOfGrowth: { type: String, required: true },
     extraSkills: { type: String, required: true },
-    additionalInfo: { type: String, required: true },
+    additionalInfo: { type: String },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -37,8 +37,8 @@ const applicationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'accepted', 'rejected'], 
-      default: 'pending', 
+      enum: ['pending', 'accepted', 'rejected'],
+      default: 'pending',
     }
   },
   {

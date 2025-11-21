@@ -1,5 +1,5 @@
 import apiClient from "../axios-config";
-import { CreateApplicationDto } from "../individual-queries/appointments/types";
+import { CreateApplicationDto } from "../individual-queries/applications/types";
 import { ApiResponse } from "../types";
 
 

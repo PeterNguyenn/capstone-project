@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, Image, Alert } from 'react-native'
+import { View, Text, ScrollView, Image, Alert, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { images } from '../../constants'
 import FormField from '../../components/FormField'
 import CustomButton from '../../components/CustomButton'
-import { Link, router } from 'expo-router'
+import { router } from 'expo-router'
 import { useApiMutation } from '../../api/hooks'
 import authService from '../../api/services/auth.service'
 import { ApiError } from '../../api/utils'
@@ -147,7 +147,9 @@ const SignUp = () => {
           <CustomButton title='Sign Up' handlePress={handleSubmit} containerStyle='mt-7' isLoading={loading} testID='signup-button' />
           <View className='justify-center pt-5 flex-row gap-2'>
             <Text className='text-lg text-gray-100 font-pregular'>Have an account already?</Text>
-            <Link href='/sign-in' className='text-secondary font-psemibold text-lg'>Sign In</Link>
+            <Pressable onPress={() => router.back()}>
+              <Text className='text-secondary font-psemibold text-lg'>Sign In</Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

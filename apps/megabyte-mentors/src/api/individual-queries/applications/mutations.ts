@@ -8,9 +8,9 @@ import {
   UpdateApplicationDto,
   NotificationTokenDto,
 } from './types';
-import { appointmentKeys } from './queryKeys';
+import { applicationKeys } from './queryKeys';
 
-export const createAppointment = async (
+export const createApplication = async (
   createDto: CreateApplicationDto
 ): Promise<ApiResponse<ApplicationRo>> => {
   const { data } = await apiClient.post<ApiResponse<ApplicationRo>>(
@@ -30,7 +30,7 @@ export const createNotificationToken = async (
   return data;
 };
 
-export const updateAppointmentStatus = async (
+export const updateApplicationStatus = async (
   id: string,
   updateDto: UpdateApplicationDto
 ): Promise<ApiResponse<ApplicationRo>> => {
@@ -41,7 +41,7 @@ export const updateAppointmentStatus = async (
   return data;
 };
 
-export const useCreateAppointmentMutation = ({
+export const useCreateApplicationMutation = ({
   onSuccess,
   onError,
 }: {
@@ -51,9 +51,9 @@ export const useCreateAppointmentMutation = ({
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (params: CreateApplicationDto) => createAppointment(params),
+    mutationFn: (params: CreateApplicationDto) => createApplication(params),
     onSuccess: async (data: ApiResponse<ApplicationRo>) => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: applicationKeys.lists() });
       onSuccess(data);
     },
     onError,
@@ -76,7 +76,7 @@ export const useNotificationTokenMutation = ({
   });
 };
 
-export const useUpdateAppointmentStatusMutation = ({
+export const useUpdateApplicationStatusMutation = ({
   onSuccess,
   onError,
 }: {
@@ -92,10 +92,10 @@ export const useUpdateAppointmentStatusMutation = ({
     }: {
       id: string;
       params: UpdateApplicationDto;
-    }) => updateAppointmentStatus(id, params),
+    }) => updateApplicationStatus(id, params),
     onSuccess: async (data: ApiResponse<ApplicationRo>) => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.details() });
+      queryClient.invalidateQueries({ queryKey: applicationKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: applicationKeys.details() });
       onSuccess(data);
     },
     onError,
