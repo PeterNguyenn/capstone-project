@@ -37,7 +37,7 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     if(error) {
       setIsLoggedIn(false);
       setUser(null);
-      console.error('Error fetching profile:', error);
+      // console.error('Error fetching profile:', error);
     }
     
   }, [data, error]);

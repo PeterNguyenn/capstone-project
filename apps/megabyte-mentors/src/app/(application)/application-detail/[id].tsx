@@ -16,6 +16,8 @@ import { useApplication } from '../../../api/individual-queries/applications/que
 import StatusChip from '../../../components/StatusChip';
 import { useGlobalContext } from '../../../context/GlobalProvider';
 import Loader from '../../../components/Loader';
+
+
 const ApplicationDetail = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useGlobalContext();
@@ -344,14 +346,14 @@ const ApplicationDetail = () => {
               <CustomButton
                 title="Reject"
                 handlePress={handleReject}
-                containerStyle="flex-1 bg-red-500"
+                containerStyle="flex-1 bg-red"
                 textStyle="text-white"
                 isLoading={isPending}
               />
               <CustomButton
                 title="Approve"
                 handlePress={handleApprove}
-                containerStyle="flex-1 bg-green-500"
+                containerStyle="flex-1 bg-green"
                 textStyle="text-white"
                 isLoading={isPending}
               />

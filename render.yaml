@@ -1,0 +1,59 @@
+# Render.com Configuration for Megabyte Mentors Backend
+# This file enables "Infrastructure as Code" deployment
+
+services:
+  # Backend API Service
+  - type: web
+    name: megabyte-mentors-api
+    runtime: docker
+    region: oregon
+    plan: free
+    branch: main
+    # Dockerfile is in the backend app folder, but context is root for monorepo
+    dockerfilePath: ./apps/my-express-api/Dockerfile
+    dockerContext: ./
+
+    # Health check endpoint
+    healthCheckPath: /health
+
+    # Environment variables (add secrets in Render Dashboard)
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGO_URI
+        sync: false  # Set manually in dashboard (contains secrets)
+      - key: TOKEN_SECRET
+        sync: false  # Set manually in dashboard (contains secrets)
+      # Optional: Add more env vars as needed
+      # - key: EMAIL_SERVICE
+      #   value: gmail
+      # - key: EXPO_ACCESS_TOKEN
+      #   sync: false
+
+    # Auto-deploy on git push
+    autoDeploy: true
+
+    # Build configuration
+    buildFilter:
+      paths:
+        - apps/my-express-api/**
+        - package.json
+        - nx.json
+      ignoredPaths:
+        - apps/megabyte-mentors/**
+        - apps/*-e2e/**
+        - docs/**
+        - "*.md"
+
+# Optional: Add a cron job to prevent cold starts (Free tier only)
+# Uncomment if you upgrade to paid plan or want to implement this
+# - type: cron
+#   name: keep-api-warm
+#   schedule: "*/14 * * * *"  # Every 14 minutes
+#   plan: starter
+#   envVars:
+#     - key: API_URL
+#       value: https://megabyte-mentors-api.onrender.com/health
+#   command: curl $API_URL
