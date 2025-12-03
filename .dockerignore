@@ -1,24 +1,74 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE & Editor
+.vscode
+.idea
 **/.classpath
-**/.dockerignore
-**/.env
-**/.git
-**/.gitignore
 **/.project
 **/.settings
 **/.toolstarget
 **/.vs
-**/.vscode
 **/*.*proj.user
+*.swp
+*.swo
+*~
+
+# Build outputs (will be generated during build)
+dist
+build
+.nx
+**/obj
+
+# Testing files (not needed in production)
+coverage
+**/*.test.ts
+**/*.spec.ts
+**/__tests__
+apps/my-express-api-e2e
+apps/megabyte-mentors-e2e
+
+# Mobile app (not needed for backend Docker image)
+apps/megabyte-mentors
+
+# Environment files (secrets go in Render dashboard)
+.env
+.env.local
+.env*.local
+**/.env
+**/secrets.dev.yaml
+**/values.dev.yaml
+
+# Documentation
+*.md
+!package.json
+docs
+ARCHITECTURE*.md
+RENDER*.md
+TRANSITION*.md
+QUICK*.md
+LICENSE
+README.md
+
+# Logs
+logs
+*.log
+**/npm-debug.log
+
+# Docker
+**/docker-compose*
+**/compose*
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
 **/*.dbmdl
 **/*.jfm
 **/charts
-**/docker-compose*
-**/compose*
-**/Dockerfile*
-**/node_modules
-**/npm-debug.log
-**/obj
-**/secrets.dev.yaml
-**/values.dev.yaml
-LICENSE
-README.md
+.eslintcache
+.prettierignore

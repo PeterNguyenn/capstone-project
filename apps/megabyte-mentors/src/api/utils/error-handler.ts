@@ -23,7 +23,7 @@ export const handleApiError = (error: AxiosError<ErrorResponse>): ApiError => {
 
   // Log error in development
   if (__DEV__) {
-    console.error('[API Error]', { status, message, code, errors });
+    // console.error('[API Error]', { status, message, code, errors });
   }
 
   return new ApiError(message, status, code, errors);

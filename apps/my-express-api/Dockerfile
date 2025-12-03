@@ -1,91 +1,65 @@
-# Base development image
-FROM node:20.5-alpine3.18 AS base
+# ==============================================
+# Stage 1: Dependencies
+# ==============================================
+FROM node:20-alpine AS deps
 
-RUN apk add --no-cache \
-  dumb-init=1.2.5-r2
+# Install build dependencies needed for native modules
+RUN apk add --no-cache python3 make g++
 
-FROM base AS node-common
+WORKDIR /app
 
-WORKDIR /src
-# Install dependencies needed for development
-RUN apk add --no-cache \
-  python3 \
-  make \
-  gcc \
-  g++
+# Copy package files
+COPY package.json package-lock.json ./
 
-COPY package.json \
-  tsconfig* \
-  nx.json \
-  eslint.config* \
-  jest* \
-  package-lock.json \
-  ./
+# Install ALL dependencies (including devDependencies for build)
+RUN npm ci
 
-RUN npm i
+# ==============================================
+# Stage 2: Build
+# ==============================================
+FROM node:20-alpine AS build
 
-FROM node-common AS server-build
+WORKDIR /app
 
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy configuration files needed for Nx build
+COPY package.json package-lock.json ./
+COPY nx.json ./
+COPY tsconfig.base.json ./
+
+# Copy the backend app source
 COPY apps/my-express-api ./apps/my-express-api/
-RUN npx nx run my-express-api:build:production
 
-FROM base AS server-prod
-LABEL description="The server side code for the Unteris website. It runs a NestJS server and connects to a redis and postgres database"
+# Build the application using Nx
+# This will output to dist/apps/my-express-api and generate a package.json
+RUN npx nx build my-express-api --configuration=production
+
+# ==============================================
+# Stage 3: Production Runtime
+# ==============================================
+FROM node:20-alpine AS production
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache dumb-init
+
+# Run as non-root user for security
 USER node
-WORKDIR /src
-COPY --from=server-build --chown=node:node /src/dist/apps/my-express-api ./
+WORKDIR /app
+
+# Copy the built application from build stage
+COPY --from=build --chown=node:node /app/dist/apps/my-express-api ./
+
+# Install only production dependencies
+# (Nx generates a package.json with only prod deps in the dist folder)
+RUN npm ci --omit=dev
+
+# Set production environment
 ENV NODE_ENV=production
-RUN npm i
+
+# Expose port (Render will override this with PORT env var)
+EXPOSE 3000
+
+# Use dumb-init to handle signals properly
 CMD ["dumb-init", "node", "main.js"]
-
-# USER node
-
-# # Command to run in development
-# CMD ["npx", "nx", "serve", "my-express-api", "--watch"]
-
-# # Build stage
-# FROM base AS build
-# WORKDIR /app
-# COPY package*.json ./
-# RUN npm ci
-# COPY . .
-# RUN npx nx build my-express-api --prod
-
-# # Production stage
-# FROM node:18-alpine AS production
-# WORKDIR /app
-# # Copy only necessary files from build stage
-# COPY --from=build /app/dist/apps/my-express-api ./
-# COPY --from=build /app/package.json ./
-# # Install only production dependencies
-# RUN npm ci --only=production
-# # Set NODE_ENV
-# ENV NODE_ENV=production
-# # Expose API port
-# EXPOSE 3000
-# # Command to run in production
-# CMD ["node", "main.js"]
-
-
-# FROM node:18 AS builder
-# # Set working directory
-# WORKDIR /app
-# # Copy the root package.json and yarn.lock to install dependencies
-# COPY package*.json ./
-# # Install dependencies
-# RUN npm install
-# # Copy the entire monorepo to the container
-# COPY . .
-# # Build the NestJS app
-# RUN npx nx build my-express-api --prod
-# # Use a lightweight Node.js image for the production environment
-# FROM node:18-alpine
-# # Set working directory
-# WORKDIR /app
-# # Copy the build output and install only production dependencies
-# COPY --from=builder /app/dist/apps/my-express-api /app
-# COPY --from=builder /app/node_modules /app/node_modules
-# # Expose the backend port
-# EXPOSE 3000
-# # Start the NestJS app
-# CMD ["node", "main.js"]
